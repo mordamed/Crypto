@@ -1,7 +1,39 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[backend=bibtex]{biblatex}
+\bibliography{biblio}
+
+\title{Lattice Signature with Efficient Protocols}
+\author{Bataille Alex, Clerbaux Coline\\Fallik Gabriel, Grasso Francesca, Tajani Mohamed}
 
 \begin{document}
+\maketitle
+\section{Introduction}
+Digital signatures are fundamental cryptographic primitives, allowing a user to authenticate a message and guarantee its integrity. For decades, 
+most practical signature schemes have relied on classical hardness assumptions such as integer factorization or discrete logarithms. However, 
+these assumptions are known to be broken by quantum algorithms, which motivates the search for alternative constructions secure in the post-quantum setting.
+Lattice-based cryptography has emerged as one of the most promising frameworks for post-quantum security, as its underlying problems are believed to remain 
+hard even for quantum computers. Beyond security, modern applications often require signatures to interact efficiently with zero-knowledge proof systems, 
+for instance in privacy-preserving protocols. Designing lattice-based signatures that remain compatible with such proof systems is therefore crucial.
+A first attempt in this direction was the construction of Libert, Ling, Mouhartem et al. (\cite{LLM+16}), which proposes a lattice-based signature scheme with 
+efficient protocols. Although conceptually appealing, their construction suffers from extremely large proof sizes (several hundreds of megabytes) making it impractical.
+The paper studied in this report (\cite{mainPaper}) revisits this problem and proposes a new lattice-based signature scheme specifically designed to interface smoothly 
+with recent zero-knowledge argument systems, while reducing the size of the produced proofs. In the following, we analyse the main ideas behind 
+this construction, highlight its improvements over previous work, and examine some of its technical components in more detail.
 
-test
+\section{Paper Contributions}
+
+\section{Signature Scheme}
+The signature scheme proposed by the paper is based on the one studied in \cite{LLM+16}, along with the improvements discussed in the previous section. 
+
+\section{Technical Analysis}
+
+\section{Conclusion}
+
+\newpage
+\printbibliography
 
 \end{document}
