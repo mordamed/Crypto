@@ -1,5 +1,5 @@
     import numpy as np
-    from lattice_sampler import sampleD
+    from src.lattice_sampler import sampleD
 
 
     class LatticeSignatureScheme:
