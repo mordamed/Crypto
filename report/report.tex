@@ -49,8 +49,75 @@ generation, using a common matrix $\mathbf{A}$. This indeed reduces the size of 
 public key is smaller and it allows the commitment randomness $\mathbf{r}$ to be algebraically absorbed into the signature vector $\mathbf{v}$, eliminating
 the need for a separate proof of opening. 
 \section{Signature Scheme}
-The signature scheme proposed by the paper is based on the one studied in \cite{LLM+16}, along with the improvements discussed in the previous section. 
 
+The proposed construction is a lattice-based signature scheme with efficient protocols, designed to minimize the witness size required for subsequent 
+zero-knowledge proofs. While it inherits the high-level goal of \cite{LLM+16} (signing committed messages), its internal mechanics differ fundamentally 
+to achieve the efficiency gains outlined in Section 2.2. The scheme relies on the hardness of the Short Integer Solution (SIS) problem over lattices and 
+utilizes the trapdoor sampling framework of Micciancio and Peikert \cite{MP12}.
+
+\subsection{Key Generation and Parameters}
+The scheme operates over a modulus $q$ and dimensions $n, m$. The key generation process (Algorithm 3.2 in 
+\cite{mainPaper}) produces a public key $pk = (\mathbf{A}, \mathbf{B}, \mathbf{u})$ and a secret key $sk = \mathbf{R}$.
+\begin{itemize}
+    \item $\mathbf{A} \in \mathbb{Z}_q^{n \times m_1}$ is chosen uniformly at random. Crucially, in the context of signing
+     hidden messages, $\mathbf{A}$ is derived from a public seed via a hash function (modeled as a Random Oracle) to ensure it is statistically random and independent of the trapdoor.
+    \item $\mathbf{R} \in \{-1, 0, 1\}^{m_1 \times m_2}$ is a short random matrix serving as the \textit{trapdoor}.
+    \item $\mathbf{B} = \mathbf{A}\mathbf{R} \pmod q$ is computed such that the relation between $\mathbf{A}$ and 
+    $\mathbf{B}$ is hidden by the shortness of $\mathbf{R}$.
+    \item $\mathbf{u} \in \mathbb{Z}_q^n$ is a random syndrome defining the specific lattice coset for signatures.
+\end{itemize}
+The public parameters also include a gadget matrix $\mathbf{G}$ and a commitment key $\mathbf{D}$, which are used during 
+the signing and verification phases.
+
+\subsection{Signing Committed Messages}
+The core innovation lies in the signing algorithm (Algorithm 3.3). To sign a binary message $\mathbf{m}$ hidden inside a 
+commitment $\mathbf{c}$, the protocol proceeds as follows:
+
+\begin{enumerate}
+    \item \textbf{Commitment:} The user computes a commitment to $\mathbf{m}$ using the public matrix $\mathbf{A}$:
+    \begin{equation}
+        \mathbf{c} = \mathbf{A}\mathbf{r} + \mathbf{D}\mathbf{m} \pmod q
+    \end{equation}
+    where $\mathbf{r}$ is a Gaussian randomness vector. Note that $\mathbf{A}$ is shared between the signature key and 
+    the commitment scheme.
+    
+    \item \textbf{Preimage Sampling:} The signer chooses a tag $\tau$ and uses the trapdoor $\mathbf{R}$ to sample a 
+    short vector $\mathbf{v}'$ satisfying a modified linear equation:
+    \begin{equation}
+        [\mathbf{A} \mid \tau\mathbf{G} - \mathbf{B}] \mathbf{v}' = \mathbf{u} + \mathbf{c} \pmod q
+    \end{equation}
+    Substituting $\mathbf{c} = \mathbf{A}\mathbf{r} + \mathbf{D}\mathbf{m}$ and $\mathbf{B} = \mathbf{A}\mathbf{R}$, 
+    the equation becomes:
+    \begin{equation}
+        \mathbf{A}\mathbf{v}'_1 + (\tau\mathbf{G} - \mathbf{A}\mathbf{R})\mathbf{v}'_2 = \mathbf{u} + \mathbf{A}\mathbf{r} + \mathbf{D}\mathbf{m}
+    \end{equation}
+    
+    \item \textbf{Randomness Merging:} The final signature vector $\mathbf{v}$ is constructed by subtracting the commitment 
+    randomness $\mathbf{r}$ from the first part of $\mathbf{v}'$:
+    \begin{equation}
+        \mathbf{v} = \mathbf{v}' - \begin{bmatrix} \mathbf{r} \\ \mathbf{0} \end{bmatrix}
+    \end{equation}
+    The resulting signature is the pair $\sigma = (\tau, \mathbf{v})$.
+\end{enumerate}
+
+\subsection{Verification}
+Verification (Algorithm 3.4) checks the validity of the signature without knowing $\mathbf{r}$. The verifier computes:
+\begin{equation}
+    [\mathbf{A} \mid \tau\mathbf{G} - \mathbf{B}] \mathbf{v} \stackrel{?}{=} \mathbf{u} + \mathbf{D}\mathbf{m} \pmod q
+\end{equation}
+By substituting $\mathbf{v} = \mathbf{v}' - [\mathbf{r}^T \mid \mathbf{0}^T]^T$, the term $\mathbf{A}\mathbf{r}$ from the 
+commitment cancels out with the $\mathbf{A}\mathbf{r}$ implicitly contained in $\mathbf{v}'$. This algebraic cancellation 
+is the key mechanism: it allows the verifier to check the signature against the message $\mathbf{m}$ directly, without 
+needing to verify the commitment opening $\mathbf{r}$ separately. Additionally, the verifier checks that 
+$\|\mathbf{v}\|$ is sufficiently small to ensure security against lattice reduction attacks.
+
+\subsection{Security Considerations}
+The reuse of matrix $\mathbf{A}$ for both the signature trapdoor and the commitment introduces a potential vulnerability: 
+if the signer could choose $\mathbf{A}$ maliciously, they might break the hiding property of the commitment. To prevent 
+this, the scheme requires $\mathbf{A}$ to be generated via a hash function (Random Oracle Model) or a trusted setup, 
+ensuring $\mathbf{A}$ is statistically uniform and independent of the trapdoor $\mathbf{R}$. The security of the scheme 
+is proven under the SIS assumption, distinguishing between Type I forgeries (new tag) and Type II forgeries (reused tag), 
+with the latter requiring the use of Rényi divergence to handle the noise distribution introduced by the randomness merging.
 \section{Technical Analysis}
 
 \section{Conclusion}
