@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{hyperref}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{amsfonts}
 \usepackage[backend=bibtex]{biblatex}
 \bibliography{biblio}
@@ -25,7 +26,28 @@ with recent zero-knowledge argument systems, while reducing the size of the prod
 this construction, highlight its improvements over previous work, and examine some of its technical components in more detail.
 
 \section{Paper Contributions}
+\subsection{Large Sizes Problem}
+As mentioned in the introduction, the signature scheme from Libert et al. \cite{LLM+16} suffers from large sized proofs (30 to 40 times larger). In this section, we study why 
+this previous scheme yields such enormous sizes. In \cite{LLM+16}, the signature scheme relies on a commitment $\mathbf{c} = \mathbf{D_0 r} + \mathbf{D_1 m}$. To 
+prove knowledge of a valid signature on a hidden message, the prover must demonstrate knowledge of the opening $(\mathbf{r}, \mathbf{m})$ such that $\mathbf{c}$ is well formed.
+More precisely, the verification algorithm operates on the binary decomposition of the commitment vector. In our case, $\mathbf{c} \in \mathbb{Z}_q^n$ so the 
+protocol requires decomposing each coefficient $c_i$ into $l = \lceil \log_2 q\rceil$ bits. \\
+This design choice induces 2 main inefficiencies : 
+\begin{enumerate}
+    \item Witness expansion : The witness size for the ZKAoK scales linearly with the number of bits to be proven. Instead of proving knowledge of $n$ elements
+            in $Z_q^n$, the prover must prove knowledge of $n \cdot \log_2 q$ binary variables. 
+    \item Constraint proliferation : To ensure the decomposition is valid, the ZK protocol must enforce the binary constraint for every bit. In frameworks 
+            based on quadratic constraints, this requires adding $\mathcal{O}(n \log q)$ quadratic equations to the proof system. Furthermore, the security
+            reduction in \cite{LLM+16} relies on embedding a trapdoor within the decomposition matrix. This introduces a norm growth factor $\propto \sqrt{n\log q}$
+             in the extracted solution, forcing the scheme to adopt overly conservative parameters to maintain security margins. 
+\end{enumerate}
 
+\subsection{The Solution}
+To mitigate this, we optimize the interactions between the commitment scheme implicitly used by privacy-enhancing protocols and the 
+signature scheme itself. Instead of generating the public parameters of these 2 components independently from one another, the authors propose a unified 
+generation, using a common matrix $\mathbf{A}$. This indeed reduces the size of the proofs since the size of the 
+public key is smaller and it allows the commitment randomness $\mathbf{r}$ to be algebraically absorbed into the signature vector $\mathbf{v}$, eliminating
+the need for a separate proof of opening. 
 \section{Signature Scheme}
 The signature scheme proposed by the paper is based on the one studied in \cite{LLM+16}, along with the improvements discussed in the previous section. 
 
