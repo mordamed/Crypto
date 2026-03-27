@@ -1,16 +1,3 @@
-@inproceedings{LLM+16,
-  author    = {Libert, Beno{\^i}t and Ling, San and Mouhartem, Fabrice and Nguyen, Khoa and Wang, Huaxiong},
-  editor    = {Cheon, Jung Hee and Takagi, Tsuyoshi},
-  title     = {Signature Schemes with Efficient Protocols and Dynamic Group Signatures from Lattice Assumptions},
-  booktitle = {Advances in Cryptology -- ASIACRYPT 2016},
-  year      = {2016},
-  publisher = {Springer Berlin Heidelberg},
-  address   = {Berlin, Heidelberg},
-  pages     = {373--403},
-  abstract  = {A recent line of works -- initiated by Gordon, Katz and Vaikuntanathan (Asiacrypt 2010) -- gave lattice-based constructions allowing users to authenticate while remaining hidden in a crowd. Despite five years of efforts, known constructions are still limited to static sets of users, which cannot be dynamically updated. This work provides new tools enabling the design of anonymous authentication systems whereby new users can join the system at any time.},
-  isbn      = {978-3-662-53890-6}
-}
-
 @inproceedings{mainPaper,
   author    = {Jeudy, Corentin and Roux-Langlois, Adeline and Sanders, Olivier},
   editor    = {Handschuh, Helena and Lysyanskaya, Anna},
@@ -20,55 +7,71 @@
   publisher = {Springer Nature Switzerland},
   address   = {Cham},
   pages     = {351--383},
-  abstract  = {Digital signature is an essential primitive in cryptography, which can be used as the digital analogue of handwritten signatures but also as a building block for more complex systems. In the latter case, signatures with specific features are needed, so as to smoothly interact with the other components of the systems, such as zero-knowledge proofs. This has given rise to so-called signatures with efficient protocols, a versatile tool that has been used in countless applications. Designing such signatures is however quite difficult, in particular if one wishes to withstand quantum computing. We are indeed aware of only one post-quantum construction, proposed by Libert et al. at Asiacrypt'16, yielding very large signatures and proofs.},
   isbn      = {978-3-031-38545-2}
 }
 
+@inproceedings{LLM+16,
+  author    = {Libert, Beno{\^i}t and Ling, San and Mouhartem, Fabrice and Nguyen, Khoa and Wang, Huaxiong},
+  editor    = {Cheon, Jung Hee and Takagi, Tsuyoshi},
+  title     = {Signature Schemes with Efficient Protocols and Dynamic Group Signatures from Lattice Assumptions},
+  booktitle = {Advances in Cryptology -- ASIACRYPT 2016},
+  year      = {2016},
+  publisher = {Springer Berlin Heidelberg},
+  address   = {Berlin, Heidelberg},
+  pages     = {373--403},
+  isbn      = {978-3-662-53890-6}
+}
+
+@inproceedings{MP12,
+  author    = {Micciancio, Daniele and Peikert, Chris},
+  editor    = {Pointcheval, David and Johansson, Thomas},
+  title     = {Trapdoors for Lattices: Simpler, Tighter, Faster, Smaller},
+  booktitle = {Advances in Cryptology -- EUROCRYPT 2012},
+  year      = {2012},
+  publisher = {Springer Berlin Heidelberg},
+  address   = {Berlin, Heidelberg},
+  pages     = {700--718},
+  isbn      = {978-3-642-29011-4}
+}
+
 @inproceedings{YangAZXYW19-0,
+  author    = {Yang, Rupeng and Au, Man Ho and Zhang, Zhenfei and Xu, Qiuliang and Yu, Zuoxia and Whyte, William},
+  editor    = {Boldyreva, Alexandra and Micciancio, Daniele},
   title     = {Efficient Lattice-Based Zero-Knowledge Arguments with Standard Soundness: Construction and Applications},
-  author    = {Rupeng Yang and Man Ho Au and Zhenfei Zhang and Qiuliang Xu and Zuoxia Yu and William Whyte},
+  booktitle = {Advances in Cryptology -- CRYPTO 2019},
   year      = {2019},
-  doi       = {10.1007/978-3-030-26948-7_6},
-  url       = {https://doi.org/10.1007/978-3-030-26948-7_6},
-  researchr = {https://researchr.org/publication/YangAZXYW19-0},
-  cites     = {0},
-  citedby   = {0},
-  pages     = {147-175},
-  booktitle = {Advances in Cryptology - CRYPTO 2019 - 39th Annual International Cryptology Conference, Santa Barbara, CA, USA, August 18-22, 2019, Proceedings, Part I},
-  editor    = {Alexandra Boldyreva and Daniele Micciancio},
+  publisher = {Springer},
   volume    = {11692},
   series    = {Lecture Notes in Computer Science},
-  publisher = {Springer},
+  pages     = {147--175},
+  doi       = {10.1007/978-3-030-26948-7_6},
   isbn      = {978-3-030-26948-7}
 }
 
-@inproceedings{MP12,
-  author    = {Micciancio, Daniele
-               and Peikert, Chris},
-  editor    = {Pointcheval, David
-               and Johansson, Thomas},
-  title     = {Trapdoors for Lattices: Simpler, Tighter, Faster, Smaller},
-  booktitle = {Advances in Cryptology -- EUROCRYPT 2012},
-  year      = {2012},
-  publisher = {Springer Berlin Heidelberg},
-  address   = {Berlin, Heidelberg},
-  pages     = {700--718},
-  abstract  = {We give new methods for generating and using ``strong trapdoors'' in cryptographic lattices, which are simultaneously simple, efficient, easy to implement (even in parallel), and asymptotically optimal with very small hidden constants. Our methods involve a new kind of trapdoor, and include specialized algorithms for inverting LWE, randomly sampling SIS preimages, and securely delegating trapdoors. These tasks were previously the main bottleneck for a wide range of cryptographic schemes, and our techniques substantially improve upon the prior ones, both in terms of practical performance and quality of the produced outputs. Moreover, the simple structure of the new trapdoor and associated algorithms can be exposed in applications, leading to further simplifications and efficiency improvements. We exemplify the applicability of our methods with new digital signature schemes and CCA-secure encryption schemes, which have better efficiency and security than the previously known lattice-based constructions.},
-  isbn      = {978-3-642-29011-4}
+@article{LNP22,
+  author  = {Lyubashevsky, Vadim and Nguyen, Ngoc Khanh and Plan{\c{c}}on, Maxime},
+  title   = {Lattice-Based Zero-Knowledge Proofs and Applications: Shorter, Simpler, and More General},
+  journal = {IACR Cryptology ePrint Archive},
+  volume  = {2022},
+  pages   = {284},
+  year    = {2022},
+  note    = {\url{https://eprint.iacr.org/2022/284}}
 }
 
-@inproceedings{MP12,
-  author    = {Micciancio, Daniele
-               and Peikert, Chris},
-  editor    = {Pointcheval, David
-               and Johansson, Thomas},
-  title     = {Trapdoors for Lattices: Simpler, Tighter, Faster, Smaller},
-  booktitle = {Advances in Cryptology -- EUROCRYPT 2012},
-  year      = {2012},
-  publisher = {Springer Berlin Heidelberg},
-  address   = {Berlin, Heidelberg},
-  pages     = {700--718},
-  abstract  = {We give new methods for generating and using ``strong trapdoors'' in cryptographic lattices, which are simultaneously simple, efficient, easy to implement (even in parallel), and asymptotically optimal with very small hidden constants. Our methods involve a new kind of trapdoor, and include specialized algorithms for inverting LWE, randomly sampling SIS preimages, and securely delegating trapdoors. These tasks were previously the main bottleneck for a wide range of cryptographic schemes, and our techniques substantially improve upon the prior ones, both in terms of practical performance and quality of the produced outputs. Moreover, the simple structure of the new trapdoor and associated algorithms can be exposed in applications, leading to further simplifications and efficiency improvements. We exemplify the applicability of our methods with new digital signature schemes and CCA-secure encryption schemes, which have better efficiency and security than the previously known lattice-based constructions.},
-  isbn      = {978-3-642-29011-4}
+@inproceedings{Helios09,
+  author    = {de Marneffe, Olivier and Pereira, Olivier and Quisquater, Jean-Jacques},
+  title     = {Electing a University President Using Open-Audit Voting: Analysis of Real-World Use of {Helios}},
+  booktitle = {2009 Electronic Voting Technology Workshop / Workshop on Trustworthy Elections (EVT/WOTE '09)},
+  year      = {2009},
+  publisher = {USENIX Association},
+  address   = {Montreal, Canada}
 }
 
+@inproceedings{JS25,
+  author    = {Jeudy, Corentin and Sanders, Olivier},
+  title     = {Worst-Case Lattice Sampler with Truncated Gadgets and Applications},
+  booktitle = {Advances in Cryptology -- ASIACRYPT 2025},
+  year      = {2025},
+  publisher = {Springer},
+  note      = {IACR ePrint 2024/1952, \url{https://eprint.iacr.org/2024/1952}}
+}

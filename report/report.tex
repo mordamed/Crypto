@@ -46,7 +46,7 @@ this construction, highlight its improvements over previous work, and examine so
 
 \section{General Paper Analysis}
 
-The goal of the paper by Jeudy, Roux-Langlois and Sanders (\cite{mainPaper}) is the design of lattice-based signatures that work well with zero-knowledge proof systems, a property known as "signatures with efficient protocols" (SEP). This is crucial because privacy-preserving authentication systems — like anonymous credentials, group signatures, e-cash and so on — require proving knowledge of a signature on a hidden message and because the systems deployed up to now revealed to be vulnerable to quantum computers. 
+The goal of the paper by Jeudy, Roux-Langlois and Sanders (\cite{mainPaper}) is the design of lattice-based signatures that work well with zero-knowledge proof systems, a property known as "signatures with efficient protocols" (SEP). This is crucial because privacy-preserving authentication systems — like anonymous credentials, group signatures, e-cash and so on — require proving knowledge of a signature on a hidden message and because the systems deployed up to now revealed to be vulnerable to quantum computers.
 
 One of the prior lattice-based SEP constructions is Libert et al. (Asiacrypt 2016) (\cite{LLM+16}). In the paper, the authors found a way to make lattice-based signatures work with zero-knowledge proof systems. However, their proofs of knowledge reached hundreds of megabytes (the paper provides a fair and quantitative analysis of this limitation). All cited works appear in top-tier venues (Crypto, Eurocrypt, Asiacrypt, Journal of Cryptology), and the paper itself was published at Crypto 2023.
 
@@ -54,9 +54,9 @@ The paper studied in this report (\cite{mainPaper}) aims to fill in the gap caus
 
 The methodology builds on well-established tools — Micciancio-Peikert trapdoors (\cite{MP12}), Rényi divergence, and the Yang et al. (\cite{YangAZXYW19-0})/ LNP22 zero-knowledge frameworks — and is technically sound. The paper also identifies and corrects an error in the fast mode of Yang et al., which is a valuable independent contribution.
 
-The results are amazing. The proof sizes go down from around 670 MB to below 650 KB in the module instantiation, a reduction of over three orders of magnitude. 
+The results are amazing. The proof sizes go down from around 670 MB to below 650 KB in the module instantiation, a reduction of over three orders of magnitude.
 
-The weaknesses are not fundamental in the sense that they arise from the methodology rather than from insurmountable barriers. The main practical weakness is the remaining proof size overhead relative to classical constructions, but it simply reflects the general current state of lattice-based zero-knowledge proofs. It is plausible that further advances in proof systems will reduce these sizes further, and the paper's modular design allows to directly benefit from such future improvements. 
+The weaknesses are not fundamental in the sense that they arise from the methodology rather than from insurmountable barriers. The main practical weakness is the remaining proof size overhead relative to classical constructions, but it simply reflects the general current state of lattice-based zero-knowledge proofs. It is plausible that further advances in proof systems will reduce these sizes further, and the paper's modular design allows to directly benefit from such future improvements.
 
 The paper has attracted follow-up citations in the lattice cryptography literature, with works using SEP framework from this paper as a part of their considerations, consistent with the authors' stated goal of providing a versatile building block. These works generally affirm the paper's contributions and have not identified fundamental flaws, though some note on further efficiency improvements that could be done improve their constructions as well.
 
@@ -90,7 +90,7 @@ The signature scheme proposed by the paper is based on the one studied in \cite{
 
 The proposed construction is a lattice-based signature scheme with efficient protocols, designed to minimize the witness size required for subsequent
 zero-knowledge proofs. While it inherits the high-level goal of \cite{LLM+16} (signing committed messages), its internal mechanics differ fundamentally
-to achieve the efficiency gains outlined in Section 2.2. The scheme relies on the hardness of the Short Integer Solution (SIS) problem over lattices and
+to achieve the efficiency gains outlined in Section~3.2. The scheme relies on the hardness of the Short Integer Solution (SIS) problem over lattices and
 utilizes the trapdoor sampling framework of Micciancio and Peikert \cite{MP12}.
 
 \subsection{Key Generation and Parameters}
@@ -140,7 +140,7 @@ commitment $\mathbf{c}$, the protocol proceeds as follows:
 
 \subsection{Verification}
 Verification (Algorithm 3.4) checks the validity of the signature without knowing $\mathbf{r}$. The verifier computes:
-\begin{equation}
+\begin{equation}\label{eq:correctness}
     [\mathbf{A} \mid \tau\mathbf{G} - \mathbf{B}] \mathbf{v} \stackrel{?}{=} \mathbf{u} + \mathbf{D}\mathbf{m} \pmod q
 \end{equation}
 By substituting $\mathbf{v} = \mathbf{v}' - [\mathbf{r}^T \mid \mathbf{0}^T]^T$, the term $\mathbf{A}\mathbf{r}$ from the
@@ -163,7 +163,7 @@ with the latter requiring the use of Rényi divergence to handle the noise distr
 
 \subsection{System Architecture}
 
-We map the anonymous credentials construction of Section~5.3 of~\cite{JRS23} to an e-voting system. The mapping is shown in Figure~\ref{fig:pipeline} and Table~\ref{tab:mapping}.
+We map the anonymous credentials construction of Section~5.3 of~\cite{mainPaper} to an e-voting system. The mapping is shown in Figure~\ref{fig:pipeline} and Table~\ref{tab:mapping}.
 
 \begin{table}[H]
     \centering
@@ -235,7 +235,7 @@ The system achieves the following security properties, directly inherited from t
 
 \begin{enumerate}[leftmargin=2.5em]
     \item \textbf{Anonymity.} The bulletin board reveals only $(\tau, \text{vote})$. The link between a voter's identity and their tag is protected by the zero-knowledge property of the proof system (LNP22 framework~\cite{LNP22}).
-    \item \textbf{Unforgeability.} Creating a valid credential without the authority's secret key requires solving the SIS problem, which is believed to be hard even for quantum computers. The EUF-CMA security of the signature reduces to $\text{SIS}_{n, m_1, q, \beta}^{\infty,2}$ via the proofs in Lemmas~3.2 and~3.3 of~\cite{JRS23}.
+    \item \textbf{Unforgeability.} Creating a valid credential without the authority's secret key requires solving the SIS problem, which is believed to be hard even for quantum computers. The EUF-CMA security of the signature reduces to $\text{SIS}_{n, m_1, q, \beta}^{\infty,2}$ via the proofs in Lemmas~3.2 and~3.3 of~\cite{mainPaper}.
     \item \textbf{Double-vote prevention.} Each voter receives a unique tag $\tau$. Since tags are revealed on the bulletin board, any duplicate is immediately detected.
     \item \textbf{Post-quantum security.} The underlying Module-SIS and Module-LWE problems are not known to be solvable in polynomial time by quantum algorithms.
 \end{enumerate}
@@ -279,7 +279,7 @@ The \texttt{truncated-sampler} repository by Jeudy and Sanders~\cite{JS25} is in
 
 \subsection{Toy vs.\ Real Parameters}
 
-Our implementation uses toy parameters ($n=64$, $q=3329$, $m_1=128$) for computational feasibility. The real parameters from Table~H.4 of~\cite{JRS23} are shown in Table~\ref{tab:params}.
+Our implementation uses toy parameters ($n=64$, $q=3329$, $m_1=128$) for computational feasibility. The real parameters from Table~H.4 of~\cite{mainPaper} are shown in Table~\ref{tab:params}.
 
 
 % ════════════════════════════════════════════════════════════════════
@@ -288,7 +288,7 @@ Our implementation uses toy parameters ($n=64$, $q=3329$, $m_1=128$) for computa
 
 \subsection{Reproduction of Table~H.4}
 
-Table~\ref{tab:params} presents our reproduction of the parameter estimates from Appendix~H of~\cite{JRS23} for the anonymous credentials construction with 10 attributes and 4 disclosed.
+Table~\ref{tab:params} presents our reproduction of the parameter estimates from Appendix~H of~\cite{mainPaper} for the anonymous credentials construction with 10 attributes and 4 disclosed.
 
 \begin{table}[H]
     \centering
@@ -320,7 +320,7 @@ Table~\ref{tab:params} presents our reproduction of the parameter estimates from
 
 \subsection{Comparison with Prior Work}
 
-Table~\ref{tab:comparison} reproduces Table~1.1 from~\cite{JRS23}, comparing the signature scheme with the only prior lattice-based SEP construction~\cite{LLM16}.
+Table~\ref{tab:comparison} reproduces Table~1.1 from~\cite{mainPaper}, comparing the signature scheme with the only prior lattice-based SEP construction~\cite{LLM+16}.
 
 \begin{table}[H]
     \centering
@@ -328,17 +328,17 @@ Table~\ref{tab:comparison} reproduces Table~1.1 from~\cite{JRS23}, comparing the
     \label{tab:comparison}
     \begin{tabular}{lccc}
         \toprule
-        \textbf{Metric}    & \textbf{LLM$^+$16~\cite{LLM16}} & \textbf{This paper (std.)} & \textbf{This paper (module)} \\
+        \textbf{Metric}    & \textbf{LLM$^+$16~\cite{LLM+16}} & \textbf{This paper (std.)} & \textbf{This paper (module)} \\
         \midrule
-        $|\pk|$            & $707 \times 10^4$ MB            & $296 \times 10$ MB         & \textbf{7.8 MB}              \\
-        $|\sk|$            & $372 \times 10^2$ MB            & $229 \times 10$ MB         & \textbf{8.9 MB}              \\
-        $|\sig|$           & $2139 \times 10^2$ KB           & 418 KB                     & \textbf{273 KB}              \\
-        $|\pi|$ (ZK proof) & $2671 \times 10^3$ KB           & $177 \times 10^2$ KB       & \textbf{639 KB}              \\
+        $|\pk|$            & $707 \times 10^4$ MB             & $296 \times 10$ MB         & \textbf{7.8 MB}              \\
+        $|\sk|$            & $372 \times 10^2$ MB             & $229 \times 10$ MB         & \textbf{8.9 MB}              \\
+        $|\sig|$           & $2139 \times 10^2$ KB            & 418 KB                     & \textbf{273 KB}              \\
+        $|\pi|$ (ZK proof) & $2671 \times 10^3$ KB            & $177 \times 10^2$ KB       & \textbf{639 KB}              \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-The module instantiation achieves improvements of approximately 900$\times$ for the public key, 4\,000$\times$ for the secret key, 780$\times$ for the signature, and 4\,000$\times$ for the ZK proof, compared to~\cite{LLM16}.
+The module instantiation achieves improvements of approximately 900$\times$ for the public key, 4\,000$\times$ for the secret key, 780$\times$ for the signature, and 4\,000$\times$ for the ZK proof, compared to~\cite{LLM+16}.
 
 
 \subsection{E-Voting Scalability}
@@ -394,23 +394,21 @@ We ran our simulation with 10~voters and 3~candidates using toy parameters ($n=6
 All 10~signatures passed the verification equation $\mathbf{A}_\tau \mathbf{v} = \mathbf{u} + \mathbf{D}\mathbf{m} \bmod q$ and the norm bounds $\inorm{\mathbf{v}_1} \leq \sigma_1 \log_2 m_1$ and $\inorm{\mathbf{v}_2} \leq 1$ (since $\mathbf{v}_2$ contains binary decomposition digits). The double-vote attempt was rejected because the tag $\tau = 1$ had already been recorded on the bulletin board. The forgery attempt was rejected because a random vector $\mathbf{v}$ has negligible probability of satisfying the verification equation.
 
 \section{Work Organization}
-First, the members of the group studied the paper on their own, in order to have a good understanding of the content. 
-A meeting was then hold in order to exchange any questions and to give a better comprehension of the article to every member of the group.
-As for the work distribution, 2 groups have been made, one group (3 members) focusing on the theoretical part and one group (2 members) focusing on 
-the practical part. Even though the groups are studying different branches of the project, it is still very important to understand 
-everything that is being done, therefore, meetings are and will be organized to share what the students did with eachother. 
+First, the members of the group studied the paper on their own, in order to have a good understanding of the content.
+A meeting was then held in order to exchange any questions and to give a better comprehension of the article to every member of the group.
+As for the work distribution, 2 groups have been made, one group (3 members) focusing on the theoretical part and one group (2 members) focusing on
+the practical part. Even though the groups are studying different branches of the project, it is still very important to understand
+everything that is being done, therefore, meetings are and will be organized to share what the students did with each other.
+
+The main difficulty encountered so far was understanding the \texttt{SampleD} algorithm at a level of detail sufficient to implement and debug it. In particular, identifying the gadget decomposition bug (base-2 decomposition vs.\ direct modular reduction) required careful comparison between the paper's description of~$\mathbf{G} = \mathbf{I}_n \otimes \mathbf{g}$ and the actual code behavior. Another challenge was mapping the abstract anonymous credentials framework (Section~5.3 of~\cite{mainPaper}) to a concrete e-voting scenario, which required design decisions not covered by the paper (e.g., how to encode voter attributes, what constitutes a ballot on the bulletin board).
 
 \section{Conclusion}
 
-In conclusion, the paper makes some important contribution to lattice-based cryptography by addressing a challenge that is both technical and practical : how to design a post-quantum signature scheme that remains efficient in privacy-preserving applications. Rather than making a simple optimization, the authors redesign the interaction between the signature and the commitment mechanism, significantly reducing the size of the zero-knowledge proofs required to prove possession of a valid signature on a hidden message.
+In conclusion, the paper makes an important contribution to lattice-based cryptography by addressing a challenge that is both technical and practical: how to design a post-quantum signature scheme that remains efficient in privacy-preserving applications. Rather than making a simple optimization, the authors redesign the interaction between the signature and the commitment mechanism, significantly reducing the size of the zero-knowledge proofs required to prove possession of a valid signature on a hidden message.
 
 What makes the construction particularly interesting is that these efficiency gains do not come at the cost of security. The scheme still relies on standard lattice assumptions, like SIS, while using trapdoor sampling and careful parameter design. The paper shows that efficiency in modern cryptography depends not only on the security of a primitive itself, but also on how well it interacts with other components such as commitments and zero-knowledge proofs. More generally, it shows that lattice-based constructions can be made much more practical for real-world privacy applications.
 
-Until now, we mainly focused on getting a solid grasp on the paper subject, and trying to understand the code written to implement the signature scheme
-by the authors. We also analysed the paper more generally by looking at its impact in the field, how it is written, the methodology used by the authors, ... 
-In the second half of the project, we would like to use the code from the authors in order to verify the sizes claimed for the signatures, maybe implement our own small 
-version of the signature scheme using a high-level language. As for the theoretical part, our goal is to dive into the proofs to understand deeply their impact and how 
-they are built. 
+On the implementation side, we have reproduced the parameter estimates from Table~H.4, implemented the signature scheme (Algorithms~3.1--3.4) with a corrected \texttt{SampleD}, and built a complete e-voting simulation demonstrating the anonymous credentials construction. In the second half of the project, we plan to dive deeper into the security proofs (particularly the Type~I/Type~II forgery reductions and the role of the Rényi divergence), and to compile and benchmark the C~implementation from the \texttt{truncated-sampler} repository to obtain runtime performance figures complementing our size estimates.
 
 \newpage
 \printbibliography
