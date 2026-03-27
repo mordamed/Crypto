@@ -158,14 +158,11 @@ Moreover, the drastic reduction in the size of the zero-knowledge proofs ensures
 In a large-scale election, storing and verifying millions of proofs becomes completely feasible, addressing one of the main bottlenecks of previous lattice-based privacy-preserving systems.
 The combination of post-quantum security guarantees, efficient pre-image sampling, and compact proof sizes establishes this scheme as a robust foundation for next-generation e-voting infrastructures.
 
-\section{Work Organization}
-First, the members of the group studied the paper on their own, in order to have a good understanding of the content. 
-A meeting was then hold in order to exchange any questions and to give a better comprehension of the article to every member of the group.
-As for the work distribution, 2 groups have been made, one group (3 members) focusing on the theoretical part and one group (2 members) focusing on 
-the practical part. Even though the groups are studying different branches of the project, it is still very important to understand 
-everything that is being done, therefore, meetings are and will be organized to share what the students did with eachother. 
-
 \section{Conclusion}
+
+In conclusion, the paper makes some important contribution to lattice-based cryptography by addressing a challenge that is both technical and practical : how to design a post-quantum signature scheme that remains efficient in privacy-preserving applications. Rather than making a simple optimization, the authors redesign the interaction between the signature and the commitment mechanism, significantly reducing the size of the zero-knowledge proofs required to prove possession of a valid signature on a hidden message.
+
+What makes the construction particularly interesting is that these efficiency gains do not come at the cost of security. The scheme still relies on standard lattice assumptions, like SIS, while using trapdoor sampling and careful parameter design. The paper shows that efficiency in modern cryptography depends not only on the security of a primitive itself, but also on how well it interacts with other components such as commitments and zero-knowledge proofs. More generally, it shows that lattice-based constructions can be made much more practical for real-world privacy applications.
 
 \newpage
 \printbibliography
