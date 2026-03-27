@@ -70,10 +70,12 @@ def run_simulation():
 
     # ── Phase 4: Double-vote ──
     print("\n── PHASE 4: DOUBLE-VOTE DETECTION ──")
-    attacker = voters[0]
-    ballot2 = attacker.cast_vote(1, authority.pk)
+
+    attackerTarget = 41
+    attacker = voters[attackerTarget]
+    ballot2 = attacker.cast_vote(3, authority.pk)       # The attacker votes, and the ballot2 takes True or False depending on the validity
     accepted = board.submit_ballot(ballot2) if ballot2 else False
-    print(f"  Voter 0 re-votes with tag={ballot2.tag}: "
+    print(f"  Voter {attackerTarget} re-votes with tag={ballot2.tag}: "
           f"{'ACCEPTED' if accepted else 'REJECTED (duplicate tag detected)'}")
 
     # ── Phase 5: Forgery ──
