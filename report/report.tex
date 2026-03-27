@@ -25,6 +25,24 @@ The paper studied in this report (\cite{mainPaper}) revisits this problem and pr
 with recent zero-knowledge argument systems, while reducing the size of the produced proofs. In the following, we analyse the main ideas behind
 this construction, highlight its improvements over previous work, and examine some of its technical components in more detail.
 
+\section{General Paper Analysis}
+
+The goal of the paper by Jeudy, Roux-Langlois and Sanders is the design of lattice-based signatures that work well with zero-knowledge proof systems, a property known as "signatures with efficient protocols" (SEP). This is crucial because privacy-preserving authentication systems — like anonymous credentials, group signatures, e-cash and so on — require proving knowledge of a signature on a hidden message and because the systems deployed up to now revealed to be vulnerable to quantum computers. 
+
+One of the prior lattice-based SEP constructions is Libert et al. (Asiacrypt 2016). In the paper, the authors found a way to make lattice-based signatures work with zero-knowledge proof systems. However, their proofs of knowledge reached hundreds of megabytes due to a binary decomposition of the commitment (the paper provides a fair and quantitative analysis of this limitation). All cited works appear in top-tier venues (Crypto, Eurocrypt, Asiacrypt, Journal of Cryptology), and the paper itself was published at Crypto 2023.
+
+The paper by Jeudy, Roux-Langlois and Sanders aims to fill in the gap caused by the problem of these previous works. In order to do this, they generate the signature and commitment parameters together using a shared matrix A, so that the commitment randomness r is algebraically absorbed into the signature vector, eliminating the binary decomposition entirely. This one change makes a difference: fewer witnesses, smaller SIS bounds, and much better parameters.
+
+The methodology builds on well-established tools — Micciancio-Peikert trapdoors, Rényi divergence, and the Yang et al. / LNP22 zero-knowledge frameworks — and is technically sound. The paper also identifies and corrects an error in the fast mode of Yang et al., which is a valuable independent contribution.
+
+The results are amazing. The proof sizes go down from around 670 MB to below 650 KB in the module instantiation, a reduction of over three orders of magnitude. 
+
+The weaknesses are not fundamental in the sense that they arise from the methodology rather than from insurmountable barriers. The main practical weakness is the remaining proof size overhead relative to classical constructions, but it simply reflects the general current state of lattice-based zero-knowledge proofs. It is plausible that further advances in proof systems will reduce these sizes further, and the paper's modular design allows to directly benefit from such future improvements. 
+
+The paper has attracted follow-up citations in the lattice cryptography literature, with works using SEP framework from this paper as a part of their considerations, consistent with the authors' stated goal of providing a versatile building block. These works generally affirm the paper's contributions and have not identified fundamental flaws, though some note on further efficiency improvements that could be done improve their constructions as well.
+
+This paper, presented at Crypto 2023, was the first one to provide a practical way to create anonymous credentials that can withstand quantum computers. It is likely to remain influential as long as lattice-based cryptography remains the dominant post-quantum paradigm.
+
 \section{Paper Contributions}
 \subsection{Large Sizes Problem}
 As mentioned in the introduction, the signature scheme from Libert et al. \cite{LLM+16} suffers from large sized proofs (30 to 40 times larger). In this section, we study why
