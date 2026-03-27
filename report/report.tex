@@ -4,8 +4,27 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsfonts}
-\usepackage[backend=bibtex]{biblatex}
-\bibliography{biblio}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{biblio.bib}
+
+% ── Custom commands used in the e-voting sections ──
+\newcommand{\pk}{\mathsf{pk}}
+\newcommand{\sk}{\mathsf{sk}}
+\newcommand{\sig}{\sigma}
+\newcommand{\inorm}[1]{\|#1\|_\infty}
+\newcommand{\sample}{\leftarrow_\$}
+
+% ── TikZ color definitions for the pipeline figure ──
+\definecolor{setup}{HTML}{4A90D9}
+\definecolor{register}{HTML}{50C878}
+\definecolor{sampled}{HTML}{F5A623}
+\definecolor{vote}{HTML}{D0021B}
+\definecolor{security}{HTML}{9013FE}
 
 \title{Lattice Signature with Efficient Protocols}
 \author{Bataille Alex, Clerbaux Coline\\Fallik Gabriel, Grasso Francesca, Tajani Mohamed}
@@ -69,7 +88,6 @@ the need for a separate proof of opening.
 \section{Signature Scheme}
 The signature scheme proposed by the paper is based on the one studied in \cite{LLM+16}, along with the improvements discussed in the previous section.
 
-
 The proposed construction is a lattice-based signature scheme with efficient protocols, designed to minimize the witness size required for subsequent
 zero-knowledge proofs. While it inherits the high-level goal of \cite{LLM+16} (signing committed messages), its internal mechanics differ fundamentally
 to achieve the efficiency gains outlined in Section 2.2. The scheme relies on the hardness of the Short Integer Solution (SIS) problem over lattices and
@@ -77,7 +95,7 @@ utilizes the trapdoor sampling framework of Micciancio and Peikert \cite{MP12}.
 
 \subsection{Key Generation and Parameters}
 The scheme operates over a modulus $q$ and dimensions $n, m$. The key generation process (Algorithm 3.2 in
-\cite{mainPaper}) produces a public key $pk = (\mathbf{A}, \mathbf{B}, \mathbf{u})$ and a secret key $sk = \mathbf{R}$.
+\cite{mainPaper}) produces a public key $\pk = (\mathbf{A}, \mathbf{B}, \mathbf{u})$ and a secret key $\sk = \mathbf{R}$.
 \begin{itemize}
     \item $\mathbf{A} \in \mathbb{Z}_q^{n \times m_1}$ is chosen uniformly at random. Crucially, in the context of signing
           hidden messages, $\mathbf{A}$ is derived from a public seed via a hash function (modeled as a Random Oracle) to ensure it is statistically random and independent of the trapdoor.
@@ -117,7 +135,7 @@ commitment $\mathbf{c}$, the protocol proceeds as follows:
           \begin{equation}
               \mathbf{v} = \mathbf{v}' - \begin{bmatrix} \mathbf{r} \\ \mathbf{0} \end{bmatrix}
           \end{equation}
-          The resulting signature is the pair $\sigma = (\tau, \mathbf{v})$.
+          The resulting signature is the pair $\sig = (\tau, \mathbf{v})$.
 \end{enumerate}
 
 \subsection{Verification}
@@ -138,43 +156,242 @@ this, the scheme requires $\mathbf{A}$ to be generated via a hash function (Rand
 ensuring $\mathbf{A}$ is statistically uniform and independent of the trapdoor $\mathbf{R}$. The security of the scheme
 is proven under the SIS assumption, distinguishing between Type I forgeries (new tag) and Type II forgeries (reused tag),
 with the latter requiring the use of Rényi divergence to handle the noise distribution introduced by the randomness merging.
-\section{Technical Analysis}
 
-\subsection{The \texttt{SampleD} Algorithm}
-The main advantage of this algorithm is its efficiency. Hence, we can easily try to make it work for larger dimensions.
-The contributors published its implementation on \url{github.com/truncatedsampler/truncated-sampler}.
-Unlike previous instantiations that relied heavily on spherical Gaussians, the newer approaches utilize elliptical Gaussian distributions to further compress the signature size and speed up the generation.
-This optimization is crucial for reducing the required bounds in the underlying Short Integer Solution (SIS) problem and improving the overall efficiency of the pre-image sampling.
+% ════════════════════════════════════════════════════════════════════
+\section{Application to E-Voting}
+% ════════════════════════════════════════════════════════════════════
 
-\subsection{The Signature Scheme}
-At the core of the proposed construction is a radical redesign of how the signature interacts with the message commitment. In previous state-of-the-art models like \cite{LLM+16}, the commitment to a hidden message required a binary decomposition, which severely deteriorated the quality of the extracted SIS solution and drastically inflated the Zero-Knowledge Proof (ZKP) size.
+\subsection{System Architecture}
 
-To solve this issue, the authors propose a much more compact verification equation:
-\begin{equation}
-    [A | \tau G - B]v = u + Dm \pmod q
-\end{equation}
-where $A$ and $B$ are public matrices, $G$ is the gadget matrix, $\tau$ is a unique tag, $u$ is a random syndrome, $D$ is the commitment key, and $v$ is the short signature vector.
+We map the anonymous credentials construction of Section~5.3 of~\cite{JRS23} to an e-voting system. The mapping is shown in Figure~\ref{fig:pipeline} and Table~\ref{tab:mapping}.
 
-To sign a hidden message $m$, the user first commits to it via $c = Ar + Dm$, where $r$ is a Gaussian randomness. The central innovation of this scheme is the absorption of this randomness $r$ directly into the pre-image $v'$ generated by the \texttt{SampleD} algorithm. By setting the final signature vector as $v = v' - [r^T | 0]^T$, the protocol removes the need to separately prove the knowledge of the commitment opening. This algebraic simplification has a cascading effect, removing thousands of intermediate witnesses in the subsequent zero-knowledge proof.
+\begin{table}[H]
+    \centering
+    \caption{Mapping from Anonymous Credentials to E-Voting}
+    \label{tab:mapping}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Paper (Section 5.3)} & \textbf{E-Voting System} & \textbf{Algorithm}           \\
+        \midrule
+        Organization                 & Election Authority       & ---                          \\
+        \textsf{OKeyGen}             & Election key generation  & Alg.~5.3 $\to$ Alg.~3.2      \\
+        \textsf{UKeyGen}             & Voter registration       & Alg.~5.4                     \\
+        \textsf{Issue}               & Credential issuance      & Alg.~5.5 (oblivious signing) \\
+        \textsf{Show}                & Vote casting             & Alg.~5.6 (ZK proof)          \\
+        Tag $\tau = F(\textsf{st})$  & Anti-double-vote serial  & Stateful, injective $F$      \\
+        Bulletin board               & Public vote record       & Tags + proofs                \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
-Furthermore, the protocol utilizes the tag $\tau$ to prevent replay attacks and ensure uniqueness. In privacy-preserving applications (such as anonymous credentials or e-voting systems), this stateful tag acts as a serial number that guarantees a user cannot double-spend or double-vote, while keeping their actual message $m$ totally secret.
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.6cm and 1.0cm,
+        box/.style={draw, rounded corners=4pt, minimum height=1.1cm,
+                minimum width=3.2cm, align=center, font=\small\sffamily,
+                thick},
+        arr/.style={-{Stealth[length=5pt]}, thick},
+        label/.style={font=\scriptsize\itshape, text=gray},
+        ]
+        % Nodes
+        \node[box, fill=setup!12, draw=setup] (setup) {\textbf{Setup}\\$\mathbf{A}, \mathbf{B}=\mathbf{AR}, \mathbf{u}, \mathbf{D}, \mathbf{G}$};
+        \node[box, fill=register!12, draw=register, right=of setup] (reg)
+        {\textbf{Registration}\\Issue credential\\$\sig = (\tau, \mathbf{v})$};
+        \node[box, fill=sampled!12, draw=sampled, below=of reg] (sample)
+        {\textbf{SampleD}\\$\mathbf{v}' \to \mathbf{v} = \mathbf{v}' - [\mathbf{r}|\mathbf{0}]^T$};
+        \node[box, fill=vote!12, draw=vote, right=of reg] (vote)
+        {\textbf{Vote}\\ZK proof $\pi$\\Reveal: $(\tau, \text{vote})$};
+        \node[box, fill=security!12, draw=security, right=of vote] (verify)
+        {\textbf{Bulletin Board}\\Verify $\pi$\\Detect doubles};
 
-Finally, while the standard lattice implementation reduces the proof size to approximately 18 MB, the authors push the efficiency further by instantiating the scheme over structured lattices,
-specifically module-SIS and module-LWE. Coupled with recent exact ZK proof frameworks (such as the Lyubashevsky-Nguyen-Plançon \cite{LNP22} framework),
-this approach reduces the size of a proof of possession of a message-signature pair to less than 650 KB. This monumental decrease makes the signature scheme highly practical for real-world,
-privacy-enhancing applications.
+        % Arrows
+        \draw[arr, setup] (setup) -- node[above, label] {$\pk, \sk$} (reg);
+        \draw[arr, sampled] (sample) -- node[right, label] {$(\tau, \mathbf{v})$} (reg);
+        \draw[arr, register] (reg) -- node[above, label] {credential} (vote);
+        \draw[arr, vote] (vote) -- node[above, label] {$(\tau, \text{vote}, \pi)$} (verify);
+    \end{tikzpicture}
+    \caption{E-voting pipeline based on the lattice SEP construction.}
+    \label{fig:pipeline}
+\end{figure}
 
-\subsection{Application to E-Voting Systems}
-The technical properties of the proposed signature scheme make it particularly advantageous for electronic voting protocols.
-In a secure e-voting scenario, the fundamental requirements are voter privacy (anonymity),
-vote unforgeability, and public verifiability of the tally.
-The stateful tag $\tau$ integrated into the verification equation provides a mathematically sound mechanism to prevent double-voting.
-Specifically, a unique tag can be deterministically derived for each voter per election. When a vote is cast, the tag is revealed, allowing voting authorities to verify that no voter has submitted multiple ballots,
-all without compromising the secrecy of the committed vote $m$.
 
-Moreover, the drastic reduction in the size of the zero-knowledge proofs ensures that the protocol remains highly scalable.
-In a large-scale election, storing and verifying millions of proofs becomes completely feasible, addressing one of the main bottlenecks of previous lattice-based privacy-preserving systems.
-The combination of post-quantum security guarantees, efficient pre-image sampling, and compact proof sizes establishes this scheme as a robust foundation for next-generation e-voting infrastructures.
+\subsection{Protocol Description}
+
+The e-voting protocol proceeds in four phases.
+
+\textbf{Phase 1: Election Setup.} The election authority runs \textsf{KeyGen} (Algorithm~3.2) to generate its signing keys $(\pk, \sk)$. The public parameters $\textsf{pp}$ and the public key $\pk = (\mathbf{A}, \mathbf{B}, \mathbf{u})$ are published. The secret key $\sk = \mathbf{R}$ is stored securely.
+
+\textbf{Phase 2: Voter Registration.} Each voter generates a secret key $\mathbf{s} \sample \{0,1\}^{m_s}$ via \textsf{UKeyGen} (Algorithm~5.4). The voter then interacts with the authority through the \textsf{Issue} protocol (Algorithm~5.5): the authority signs the message $\mathbf{m}_e = [\mathbf{s} \| \text{attributes}]$ via oblivious signing, producing a credential $\sig = (\tau, \mathbf{v})$. The tag $\tau = F(\textsf{st})$ is unique per voter, where $F$ is an injective function and $\textsf{st}$ is a counter incremented after each issuance.
+
+\textbf{Phase 3: Vote Casting.} To cast a vote, the voter runs the \textsf{Show} protocol (Algorithm~5.6): they produce a zero-knowledge proof $\pi$ demonstrating that they possess a valid credential $(\tau, \mathbf{v})$ on some message $\mathbf{m}_e$ satisfying $\textsf{Verify}(\pk, \mathbf{m}_e, (\tau, \mathbf{v})) = 1$. The proof reveals \emph{only} the tag $\tau$ and the vote~--- the voter's identity, secret key, and other attributes remain hidden.
+
+\textbf{Phase 4: Verification and Tallying.} The bulletin board accepts a ballot $(\tau, \text{vote}, \pi)$ if and only if (i)~the proof $\pi$ verifies, and (ii)~the tag $\tau$ has not been used before. If a voter attempts to vote twice, their tag will already appear on the board and the second ballot is rejected.
+
+
+\subsection{Security Properties}
+
+The system achieves the following security properties, directly inherited from the anonymous credentials construction:
+
+\begin{enumerate}[leftmargin=2.5em]
+    \item \textbf{Anonymity.} The bulletin board reveals only $(\tau, \text{vote})$. The link between a voter's identity and their tag is protected by the zero-knowledge property of the proof system (LNP22 framework~\cite{LNP22}).
+    \item \textbf{Unforgeability.} Creating a valid credential without the authority's secret key requires solving the SIS problem, which is believed to be hard even for quantum computers. The EUF-CMA security of the signature reduces to $\text{SIS}_{n, m_1, q, \beta}^{\infty,2}$ via the proofs in Lemmas~3.2 and~3.3 of~\cite{JRS23}.
+    \item \textbf{Double-vote prevention.} Each voter receives a unique tag $\tau$. Since tags are revealed on the bulletin board, any duplicate is immediately detected.
+    \item \textbf{Post-quantum security.} The underlying Module-SIS and Module-LWE problems are not known to be solvable in polynomial time by quantum algorithms.
+\end{enumerate}
+
+
+% ════════════════════════════════════════════════════════════════════
+\section{Implementation}
+% ════════════════════════════════════════════════════════════════════
+
+\subsection{Code Structure}
+
+Our implementation is organized into five Python modules, with a clear separation between the lattice primitives and the e-voting application layer:
+
+\begin{table}[H]
+    \centering
+    \caption{Source code organization}
+    \begin{tabular}{lp{9cm}}
+        \toprule
+        \textbf{Module}              & \textbf{Description}                                                                                        \\
+        \midrule
+        \texttt{lattice\_sampler.py} & \texttt{SampleD} algorithm with corrected gadget decomposition, \texttt{gadget\_solve} base-2 decomposition \\
+        \texttt{signature.py}        & \texttt{LatticeSignatureScheme} class implementing Algorithms~3.1--3.4                                      \\
+        \texttt{evoting.py}          & \texttt{ElectionAuthority}, \texttt{BulletinBoard}, \texttt{Voter} classes mapping Section~5.3              \\
+        \texttt{parameters.py}       & \texttt{ParameterAnalyzer} reproducing Table~H.4                                                            \\
+        \texttt{main.py}             & Entry point running the full simulation                                                                     \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The \texttt{truncated-sampler} repository by Jeudy and Sanders~\cite{JS25} is included as a Git submodule. It provides (i)~Python scripts for parameter estimation, which we used to validate our reproduction of Table~H.4, and (ii)~a C~implementation of the full signature scheme with FLINT-based polynomial arithmetic, which can be compiled separately for performance benchmarks.
+
+\subsection{Key Implementation Details}
+
+\textbf{Gadget matrix.} We construct $\mathbf{G} = \mathbf{I}_n \otimes \mathbf{g}$ using NumPy's \texttt{np.kron}, producing a matrix of size $n \times nk$ where $k = \lceil \log_2 q \rceil = 12$ for $q = 3329$.
+
+\textbf{Gadget decomposition.} The \texttt{gadget\_solve} function decomposes an integer $t \bmod q$ into its base-2 representation, returning a vector $\mathbf{z} \in \{0,1\}^k$ such that $\mathbf{g}^T \mathbf{z} = t \bmod q$.
+
+\textbf{Tag inversion.} The modular inverse $\tau^{-1} \bmod q$ is computed via Fermat's little theorem as $\tau^{q-2} \bmod q$, leveraging Python's built-in modular exponentiation.
+
+\textbf{Randomness absorption.} The signature absorbs the commitment randomness by computing $\mathbf{v} = \mathbf{v}' - [\mathbf{r}^T \mid \mathbf{0}]^T$, which algebraically cancels the $\mathbf{A}\mathbf{r}$ term during verification, as shown in Equation~\eqref{eq:correctness}.
+
+\subsection{Toy vs.\ Real Parameters}
+
+Our implementation uses toy parameters ($n=64$, $q=3329$, $m_1=128$) for computational feasibility. The real parameters from Table~H.4 of~\cite{JRS23} are shown in Table~\ref{tab:params}.
+
+
+% ════════════════════════════════════════════════════════════════════
+\section{Parameter Analysis}
+% ════════════════════════════════════════════════════════════════════
+
+\subsection{Reproduction of Table~H.4}
+
+Table~\ref{tab:params} presents our reproduction of the parameter estimates from Appendix~H of~\cite{JRS23} for the anonymous credentials construction with 10 attributes and 4 disclosed.
+
+\begin{table}[H]
+    \centering
+    \caption{Reproduced parameters from Table~H.4 (128-bit quantum security)}
+    \label{tab:params}
+    \begin{tabular}{llr}
+        \toprule
+        \textbf{Parameter}          & \textbf{Symbol} & \textbf{Value}     \\
+        \midrule
+        Ring degree                 & $n$             & 128                \\
+        Module rank                 & $d$             & 12                 \\
+        Modulus                     & $q$             & $2^{44} - 119$     \\
+        Splitting factors           & $k$             & 4                  \\
+        Tag weight                  & $w$             & 6                  \\
+        Tag space size              & $|T_w|$         & $\approx 2^{32.3}$ \\
+        \midrule
+        Commitment randomness dim.  & $m_1$           & 657                \\
+        Trapdoor rank               & $m_2$           & 528                \\
+        User secret dim.            & $m_s$           & 24                 \\
+        Attribute polynomials       & $m_3$           & 10                 \\
+        \midrule
+        Preimage sampling width     & $\sigma$        & 5\,609             \\
+        Combined width              & $\sigma_1$      & 26\,587            \\
+        Commitment randomness width & $\sigma_2$      & 25\,989            \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+\subsection{Comparison with Prior Work}
+
+Table~\ref{tab:comparison} reproduces Table~1.1 from~\cite{JRS23}, comparing the signature scheme with the only prior lattice-based SEP construction~\cite{LLM16}.
+
+\begin{table}[H]
+    \centering
+    \caption{Efficiency comparison (128-bit quantum security, $\lambda = 128$)}
+    \label{tab:comparison}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Metric}    & \textbf{LLM$^+$16~\cite{LLM16}} & \textbf{This paper (std.)} & \textbf{This paper (module)} \\
+        \midrule
+        $|\pk|$            & $707 \times 10^4$ MB            & $296 \times 10$ MB         & \textbf{7.8 MB}              \\
+        $|\sk|$            & $372 \times 10^2$ MB            & $229 \times 10$ MB         & \textbf{8.9 MB}              \\
+        $|\sig|$           & $2139 \times 10^2$ KB           & 418 KB                     & \textbf{273 KB}              \\
+        $|\pi|$ (ZK proof) & $2671 \times 10^3$ KB           & $177 \times 10^2$ KB       & \textbf{639 KB}              \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The module instantiation achieves improvements of approximately 900$\times$ for the public key, 4\,000$\times$ for the secret key, 780$\times$ for the signature, and 4\,000$\times$ for the ZK proof, compared to~\cite{LLM16}.
+
+
+\subsection{E-Voting Scalability}
+
+We evaluate the practical feasibility of deploying the scheme for elections of various sizes. The dominant cost is the storage of ZK proofs on the bulletin board, at 724~KB per voter.
+
+\begin{table}[H]
+    \centering
+    \caption{Bulletin board storage requirements}
+    \label{tab:scalability}
+    \begin{tabular}{rr}
+        \toprule
+        \textbf{Number of voters} & \textbf{Total storage} \\
+        \midrule
+        1\,000                    & 0.7 GB                 \\
+        10\,000                   & 6.9 GB                 \\
+        100\,000                  & 69 GB                  \\
+        1\,000\,000               & 691 GB                 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+For comparison, the pairing-based Helios system~\cite{Helios09} produces proofs of approximately 2--5~KB, yielding an overhead factor of roughly 240$\times$. However, Helios is not post-quantum secure.
+
+The tag space $T_w = \{\tau \in S_{\text{bin}} : \|\tau\|_2 = \sqrt{w}\}$ with $w = 6$ and $n = 128$ has cardinality $\binom{128}{6} \approx 5.4 \times 10^9$, sufficient for any national election.
+
+
+% ════════════════════════════════════════════════════════════════════
+\section{Experimental Results}
+% ════════════════════════════════════════════════════════════════════
+
+We ran our simulation with 10~voters and 3~candidates using toy parameters ($n=64$, $q=3329$). The results confirm the correctness and security properties of the implementation.
+
+\begin{table}[H]
+    \centering
+    \caption{Simulation results (toy parameters)}
+    \begin{tabular}{lr}
+        \toprule
+        \textbf{Metric}          & \textbf{Result}         \\
+        \midrule
+        Signatures issued        & 10/10 valid             \\
+        Votes cast and verified  & 10/10 accepted          \\
+        Double-vote attempts     & 1 detected and rejected \\
+        Forgery attempts         & 1 correctly rejected    \\
+        Signing time (avg.)      & $< 1$~ms                \\
+        Verification time (avg.) & $\approx 2$~ms          \\
+        Signature size (toy)     & 7.0 KB                  \\
+        Public key size (toy)    & 448.5 KB                \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+All 10~signatures passed the verification equation $\mathbf{A}_\tau \mathbf{v} = \mathbf{u} + \mathbf{D}\mathbf{m} \bmod q$ and the norm bounds $\inorm{\mathbf{v}_1} \leq \sigma_1 \log_2 m_1$ and $\inorm{\mathbf{v}_2} \leq 1$ (since $\mathbf{v}_2$ contains binary decomposition digits). The double-vote attempt was rejected because the tag $\tau = 1$ had already been recorded on the bulletin board. The forgery attempt was rejected because a random vector $\mathbf{v}$ has negligible probability of satisfying the verification equation.
 
 \section{Work Organization}
 First, the members of the group studied the paper on their own, in order to have a good understanding of the content. 
