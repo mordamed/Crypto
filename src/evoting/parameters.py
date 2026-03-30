@@ -1,20 +1,11 @@
-"""
-Parameter Analysis — reproduces Appendix H (Table H.4) from the paper.
-
-Based on the Python scripts from truncated-sampler:
-  scripts/parameters_anonymous_credentials_AGJLRS24_bimodal.py
-  scripts/parameters_anonymous_credentials.py
-"""
-
 from math import log2, sqrt, ceil
 
+# reproduces Appendix H (Table H.4) from the paper.
 
 class ParameterAnalyzer:
-    """Reproduces parameter estimates and comparisons from the paper."""
-
     @staticmethod
     def compute_paper_params() -> dict:
-        """Reproduce Table H.4 parameters for anonymous credentials."""
+        """Anonymous credentials."""
         n, d, q = 128, 12, 2**44 - 119
         k, w, kappa = 4, 6, ceil(log2(q))
         m1, m2, ms, m3_attr = 657, d * kappa, 2 * d, 10
@@ -47,7 +38,7 @@ class ParameterAnalyzer:
             'pk_MB': pk_bits / (8 * 1024**2),
             'sk_MB': sk_bits / (8 * 1024**2),
             'sig_KB': sig_bits / (8 * 1024),
-            'proof_KB': 724,  # From Table H.4
+            'proof_KB': 724,                    # From Table H.4
             'beta_I': sqrt(beta_I_sq),
             'bound_v1': bound_v1, 'bound_v2': bound_v2,
         }

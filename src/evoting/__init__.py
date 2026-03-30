@@ -1,7 +1,4 @@
 """
-Lattice Signature with Efficient Protocols — E-Voting Application
-
-Paper: Jeudy, Roux-Langlois, Sanders (Crypto 2023)
 Implementation ref: truncated-sampler (Jeudy & Sanders, Asiacrypt 2025)
 """
 

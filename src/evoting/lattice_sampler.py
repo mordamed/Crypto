@@ -1,27 +1,12 @@
-"""
-Lattice Sampler — SampleD (Micciancio-Peikert, EUROCRYPT 2012)
-
-Implements the trapdoor-based preimage sampling algorithm used in:
-  Jeudy, Roux-Langlois, Sanders — "Lattice Signature with Efficient Protocols,
-  Application to Anonymous Credentials" (Crypto 2023)
-
-Key fix over previous version: proper gadget decomposition in base 2.
-The old code set z[:n] = t' mod q (values up to q/2 ≈ 1600), making
-signatures fail verification. The correct G-sampling decomposes each 
-component of t' in base 2, producing z ∈ {0,1}^m2.
-"""
-
 import numpy as np
 from math import ceil, log2
 
+# Lattice Sampler — SampleD
 
 def discrete_gaussian_sample(dim: int, sigma: float) -> np.ndarray:
     """
-    Sample from a discrete Gaussian D_{Z^dim, sigma}.
+    Sample from a discrete Gaussian.
     Approximated by rounding continuous Gaussian samples.
-    
-    In production, use constant-time samplers (cf. truncated-sampler C code,
-    which uses Klein sampling on the gadget lattice + rejection sampling).
     """
     return np.round(np.random.normal(0, sigma, size=(dim, 1))).astype(np.int64)
 
@@ -34,7 +19,7 @@ def gadget_solve(t_val: int, q: int, base: int = 2) -> np.ndarray:
     producing coefficients in {0, ..., base-1}. This is what makes the output
     SHORT — O(1) per component instead of O(q).
     
-    Reference: [MP12] Section 4 (Gadget trapdoor)
+    See "Gadget Trapdoor"
     """
     k = ceil(log2(q) / log2(base)) if base > 1 else int(q)
     z = np.zeros(k, dtype=np.int64)
@@ -52,25 +37,6 @@ def sampleD(R: np.ndarray, A: np.ndarray, tau: int, target: np.ndarray,
 
     Given the trapdoor R (where B = A*R mod q), finds a short vector v such that:
         [A | tau*G - B] * v = target mod q
-
-    Steps:
-        1. Perturbation:    p <- D_{Z^m1, sigma1}
-        2. Syndrome:        t' = tau^{-1} * (target - A*p) mod q
-        3. G-sampling:      solve G*z = t' mod q for SHORT z (binary decomposition)
-        4. Reconstruction:  v = [p + R*z; z]
-
-    The gadget matrix G = I_n ⊗ g with g = [1, 2, 4, ..., 2^{k-1}].
-    G-sampling decomposes each component of t' in base 2 → coefficients in {0,1}.
-
-    Correctness proof (inline):
-        A_tau * v = A*(p + R*z) + (tau*G - B)*z
-                  = A*p + A*R*z + tau*G*z - B*z
-                  = A*p + B*z + tau*G*z - B*z       [since A*R = B]
-                  = A*p + tau*G*z
-                  = A*p + tau * tau^{-1} * (target - A*p)
-                  = target mod q                     QED
-
-    Reference: [MP12] Thm 5.1, paper Section 3.1, src/algorithm.md
     """
     m1, m2 = R.shape
     n = A.shape[0]

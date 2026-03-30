@@ -1,31 +1,12 @@
-"""
-Lattice-Based Signature Scheme with Efficient Protocols
-
-Implements Algorithms 3.1 (Setup), 3.2 (KeyGen), 3.3 (Sign), 3.4 (Verify)
-from Jeudy, Roux-Langlois, Sanders — Crypto 2023.
-
-Toy parameters (n=64, q=3329) for demonstration.
-Real parameters from Table H.4: n=128, d=12, q=2^44-119, m1=657, m2=528.
-"""
-
 import numpy as np
 from math import ceil, log2
 from typing import Tuple
 
 from .lattice_sampler import sampleD, discrete_gaussian_sample
 
+# Lattice-Based Signature Scheme with Efficient Protocols
 
 class LatticeSignatureScheme:
-    """
-    Lattice signature scheme designed to interface smoothly with
-    privacy-enhancing protocols (anonymous credentials, group signatures, etc.).
-
-    Key innovation over [LLM+16]: the commitment matrix A is shared with the 
-    signature public key, allowing the commitment randomness r to be absorbed
-    into the signature vector v. This eliminates thousands of intermediate 
-    witnesses in ZK proofs and reduces proof size by ~4000x.
-    """
-
     def __init__(self, n=64, q=3329, m1=128, m2=None, m3=32):
         """
         Algorithm 3.1: Setup
@@ -110,8 +91,8 @@ class LatticeSignatureScheme:
         Algorithm 3.4: Verify
 
         Checks:
-        1. [A | tau*G - B] * v ≡ u + D*m  (mod q)     algebraic correctness
-        2. ||v1||_∞ ≤ σ1·log2(m1)                      shortness of v1
+        1. [A | tau*G - B] * v ≡ u + D*m  (mod q)       algebraic correctness
+        2. ||v1||_∞ ≤ σ1·log2(m1)                       shortness of v1
         3. ||v2||_∞ ≤ bound                             shortness of v2
         """
         A, B, u = pk['A'], pk['B'], pk['u']

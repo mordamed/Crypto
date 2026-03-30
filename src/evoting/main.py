@@ -1,26 +1,15 @@
-"""
-Main entry point — runs the full e-voting simulation and parameter analysis.
-
-Usage:
-    python -m src.main
-    or
-    python main.py  (from repo root, with symlink or copy)
-"""
-
 import numpy as np
 import time
 from .evoting import ElectionAuthority, BulletinBoard, Voter
 from .parameters import ParameterAnalyzer
 
-
 def run_simulation():
     print("=" * 78)
     print("  LATTICE-BASED E-VOTING SIMULATION")
-    print("  Paper: Jeudy, Roux-Langlois, Sanders (Crypto 2023)")
     print("=" * 78)
 
     candidates = ["Alice Wonderland", "Bob Builder", "Charlie Chaplin"]
-    n_voters = 1000
+    n_voters = 99999
 
     # ── Phase 1: Setup ──
     print("\n── PHASE 1: ELECTION SETUP ──")
@@ -31,7 +20,7 @@ def run_simulation():
     print(f"  |pk| = {(authority.pk['A'].nbytes + authority.pk['B'].nbytes + authority.pk['u'].nbytes) / 1024:.1f} KB")
 
     # ── Phase 2: Registration ──
-    print("\n── PHASE 2: VOTER REGISTRATION (Algorithm 5.5: Issue) ──")
+    print("\n── PHASE 2: VOTER REGISTRATION ──")
     voters = []
     for vid in range(n_voters):
         district = np.random.randint(0, 2, size=(4, 1), dtype=np.int64)
@@ -53,7 +42,7 @@ def run_simulation():
     print(f"  Total registered: {len(voters)}")
 
     # ── Phase 3: Voting ──
-    print("\n── PHASE 3: VOTE CASTING (Algorithm 5.6: Show) ──")
+    print("\n── PHASE 3: VOTE CASTING ──")
     np.random.seed(42)
     for voter in voters:
         chosen = np.random.randint(0, len(candidates))
@@ -70,7 +59,6 @@ def run_simulation():
 
     # ── Phase 4: Double-vote ──
     print("\n── PHASE 4: DOUBLE-VOTE DETECTION ──")
-
     attackerTarget = 41
     attacker = voters[attackerTarget]
     ballot2 = attacker.cast_vote(3, authority.pk)       # The attacker votes, and the ballot2 takes True or False depending on the validity
@@ -113,6 +101,7 @@ if __name__ == "__main__":
     run_simulation()
     ParameterAnalyzer.print_table_1_1()
     ParameterAnalyzer.print_evoting_analysis()
+
     print("\n" + "=" * 78)
     print("  DONE")
     print("=" * 78)

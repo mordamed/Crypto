@@ -1,14 +1,3 @@
-"""
-E-Voting System based on Lattice Anonymous Credentials
-
-Maps Section 5.3 of the paper to an electronic voting scenario:
-    Organization  →  ElectionAuthority
-    OKeyGen       →  Election setup
-    UKeyGen       →  Voter registration (voter generates secret key)
-    Issue         →  Credential issuance (oblivious signing, Algorithm 5.5)
-    Show          →  Vote casting (ZK proof of credential, Algorithm 5.6)
-"""
-
 import numpy as np
 import time
 import hashlib
@@ -17,6 +6,16 @@ from typing import List, Optional, Dict
 
 from .signature import LatticeSignatureScheme
 
+# E-Voting System based on Lattice Anonymous Credentials
+
+"""
+Maps Section 5.3 of the paper to an electronic voting scenario:
+    Organization  →  ElectionAuthority
+    OKeyGen       →  Election setup
+    UKeyGen       →  Voter registration (voter generates secret key)
+    Issue         →  Credential issuance (oblivious signing, Algorithm 5.5)
+    Show          →  Vote casting (ZK proof of credential, Algorithm 5.6)
+"""
 
 @dataclass
 class VoterCredential:
