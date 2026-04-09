@@ -158,6 +158,27 @@ ensuring $\mathbf{A}$ is statistically uniform and independent of the trapdoor $
 is proven under the SIS assumption, distinguishing between Type I forgeries (new tag) and Type II forgeries (reused tag),
 with the latter requiring the use of Rényi divergence to handle the noise distribution introduced by the randomness merging.
 
+
+\subsection{Cyclotomic Ring}
+
+A major step in the paper is the move from standard lattices to module lattices. Instead of working only with integers, the construction is transferred to the ring
+\[R=\mathbb{Z}[X]/\langle X^n+1\rangle,\]
+where \(n\) is a power of \(2\). In the paper, this ring is the 2n-th cyclotomic ring. The authors also do modulo \(q\), using\[R_q=\mathbb{Z}_q[X]/\langle X^n+1\rangle.\]
+This setting is attractive in post-quantum lattice cryptography because the additional structure leads to more efficient computations and more compact keys.
+
+The signature equation keeps the same general shape as in the standard lattice setting, but it is now written over the ring:
+\[[\mathbf{A}\mid \tau \mathbf{G}-\mathbf{B}]\mathbf{v}
+= \mathbf{u}+\mathbf{D}\mathbf{m} \pmod{qR},\]
+with the extra condition that \(\mathbf{v}\) has to remain short.
+
+Here, the objects are no longer ordinary integer vectors but vectors of polynomials. This means that some notions have to be defined differently. Like, a binary polynomial means that all its coefficients are in \(\{0,1\}\), while a short element means that its coefficients remain small. 
+
+Proving knowledge of a valid signature requires proving four things at the same time: that the tag \(\tau\) belongs to the chosen tag space; that \(\mathbf{v}\) is short; that \(\mathbf{m}\) is a vector of binary polynomials; and that the verification equation is satisfied.
+
+The paper explains that these conditions are not treated separately, but are all handled inside the LNP22 framework~\cite{LNP22}. This is important because the efficiency of the scheme depends not only on the signature, but also on how well it fits the proof system used.
+
+This module version is the most practical one in the paper. It is the combination of the ring structure and the LNP22 proof framework that makes the proof of message-signature possession drop below \(650\) KB. Using this construction as a building block, the authors then build an anonymous credential system.
+
 % ════════════════════════════════════════════════════════════════════
 \section{Application to E-Voting}
 % ════════════════════════════════════════════════════════════════════
