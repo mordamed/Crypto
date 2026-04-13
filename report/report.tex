@@ -179,6 +179,18 @@ The paper explains that these conditions are not treated separately, but are all
 
 This module version is the most practical one in the paper. It is the combination of the ring structure and the LNP22 proof framework that makes the proof of message-signature possession drop below \(650\) KB. Using this construction as a building block, the authors then build an anonymous credential system.
 
+\section{Comparison With More Recent Constructions}
+The constructions presented in this paper are now superseded by the constructions in the more recent paper \cite{newPaper}. Indeed, the constructions of \cite{mainPaper} representing a step toward a
+realistically implementable signature scheme with efficient protocols, still remains impractical due to several structural and inefficiencies in the proofs. In particular, achieving adaptive security requires
+the inclusion of a second MP trapdoor in the public key, this significantly grows matrix dimensions, signature sizes, and zero-knowledge witnesses. Moreover, the scheme in \cite{mainPaper} relies mainly on statistical 
+security arguments, which impose conservative parameter choices resulting in large proofs of possession. Additional inefficiencies are coming from the use of spherical perturbation in preimage sampling and the injection 
+of signer-side randomness into the syndrome. These result in increased norm bounds and further degraded performance. The work \cite{newPaper} addresses these limitations. It introduces 
+a partial trapdoor switching technique that removes the need for a full auxiliary trapdoor while preserving a proof under standard M-SIS and M-LWE assumptions, yielding much smaller proofs and signatures. 
+The authors also replace spherical sampling with an elliptic sampler, tighten probabilistic and norm analyses, and eliminate signer-side randomness via a rejection-sampling-based security argument. 
+All these improvements allow for reduced parameter sizes, yielding in much smaller proofs of possession of about $80KB$, enabling, for the first time, a practical lattice-based instantation of anonymous 
+credentials under standard assumptions. 
+
+
 % ════════════════════════════════════════════════════════════════════
 \section{Application to E-Voting}
 % ════════════════════════════════════════════════════════════════════
