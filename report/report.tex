@@ -255,7 +255,7 @@ We map the anonymous credentials construction of Section~5.3 of~\cite{mainPaper}
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        node distance=0.6cm and 1.0cm,
+        node distance=0.6cm and 1.5cm,
         box/.style={draw, rounded corners=4pt, minimum height=1.1cm,
                 minimum width=3.2cm, align=center, font=\small\sffamily,
                 thick},
@@ -270,14 +270,14 @@ We map the anonymous credentials construction of Section~5.3 of~\cite{mainPaper}
         {\textbf{SampleD}\\$\mathbf{v}' \to \mathbf{v} = \mathbf{v}' - [\mathbf{r}|\mathbf{0}]^T$};
         \node[box, fill=vote!12, draw=vote, right=of reg] (vote)
         {\textbf{Vote}\\ZK proof $\pi$\\Reveal: $(\tau, \text{vote})$};
-        \node[box, fill=security!12, draw=security, right=of vote] (verify)
+        \node[box, fill=security!12, draw=security, below=of vote] (verify)
         {\textbf{Bulletin Board}\\Verify $\pi$\\Detect doubles};
 
         % Arrows
         \draw[arr, setup] (setup) -- node[above, label] {$\pk, \sk$} (reg);
         \draw[arr, sampled] (sample) -- node[right, label] {$(\tau, \mathbf{v})$} (reg);
         \draw[arr, register] (reg) -- node[above, label] {credential} (vote);
-        \draw[arr, vote] (vote) -- node[above, label] {$(\tau, \text{vote}, \pi)$} (verify);
+        \draw[arr, vote] (vote) -- node[right, label] {$(\tau, \text{vote}, \pi)$} (verify);
     \end{tikzpicture}
     \caption{E-voting pipeline based on the lattice SEP construction.}
     \label{fig:pipeline}
