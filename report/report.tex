@@ -47,7 +47,7 @@ this construction, highlight its improvements over previous work, and examine so
 
 \section{General Paper Analysis}
 
-The goal of the paper by Jeudy, Roux-Langlois and Sanders (\cite{mainPaper}) is the design of lattice-based signatures that work well with zero-knowledge proof systems, a property known as "signatures with efficient protocols" (SEP). This is crucial because privacy-preserving authentication systems — like anonymous credentials, group signatures, e-cash and so on — require proving knowledge of a signature on a hidden message and because the systems deployed up to now revealed to be vulnerable to quantum computers.
+The goal of the paper (\cite{mainPaper}) is the design of lattice-based signatures that work well with zero-knowledge proof systems, a property known as ``signatures with efficient protocols" (SEP). This is crucial because privacy-preserving authentication systems — like anonymous credentials, group signatures, e-cash and so on — require proving knowledge of a signature on a given message and because the systems deployed up to now revealed to be vulnerable to quantum computers.
 
 One of the prior lattice-based SEP constructions is Libert et al. (Asiacrypt 2016) (\cite{LLM+16}). In the paper, the authors found a way to make lattice-based signatures work with zero-knowledge proof systems. However, their proofs of knowledge reached hundreds of megabytes (the paper provides a fair and quantitative analysis of this limitation). All cited works appear in top-tier venues (Crypto, Eurocrypt, Asiacrypt, Journal of Cryptology), and the paper itself was published at Crypto 2023.
 
@@ -59,11 +59,18 @@ The results are amazing. The proof sizes go down from around 670 MB to below 650
 
 The weaknesses are not fundamental in the sense that they arise from the methodology rather than from insurmountable barriers. The main practical weakness is the remaining proof size overhead relative to classical constructions, but it simply reflects the general current state of lattice-based zero-knowledge proofs. It is plausible that further advances in proof systems will reduce these sizes further, and the paper's modular design allows to directly benefit from such future improvements.
 
-The paper has attracted follow-up citations in the lattice cryptography literature, with works using SEP framework from this paper as a part of their considerations, consistent with the authors' stated goal of providing a versatile building block. These works generally affirm the paper's contributions and have not identified fundamental flaws, though some note on further efficiency improvements that could be done improve their constructions as well.
+The paper has attracted follow-up citations in the lattice cryptography literature, with works using SEP framework from this paper as a part of their considerations, consistent with the authors' stated goal of providing a versatile building block. These works generally affirm the paper's contributions and have not identified fundamental flaws.
+We can, however, note that some further efficiency improvements are highlighted and lead to more recent constructions (cf. \ref{recentConst}).
 
 This paper, presented at Crypto 2023, was the first one to provide a practical way to create anonymous credentials that can withstand quantum computers. It is likely to remain influential as long as lattice-based cryptography remains the dominant post-quantum paradigm.
 
 \section{Paper Contributions}
+\subsection{Notations}
+In this report, we follow the notations used in \cite{mainPaper}. We recall the most important notations here. We denote vectors by bold lowercase letters such as $\mathbf{a}$, 
+and matrices by bold uppercase letters such as $\mathbf{A}$. The identity matrix of dimension $n$ is written as $\mathbf{I}_n$. We use the notation $\mathbb{Z}_q$ for the ring $\mathbb{Z}/q\mathbb{Z}$, for a positive integer $q$. 
+The uniform distribution over a given finite set $S$ is denoted $U(S)$. The sampling $x \in S$ from a probability distribution $P$ is denoted by $x \hookleftarrow P$. 
+For a lattice $\mathcal{L}$ of rank $n$, we denote by $\mathcal{D}_{\mathcal{L}, \sigma, \mathbf{c}}$ the discrete Gaussian distribution of support $\mathcal{L}$, width $\sigma$ and center $\mathbf{c}$. 
+If $\mathbf{c} = \mathbf{0}$, we omit it in the notations. 
 \subsection{Large Sizes Problem}
 As mentioned in the introduction, the signature scheme from Libert et al. \cite{LLM+16} suffers from large sized proofs (30 to 40 times larger). In this section, we study why
 this previous scheme yields such enormous sizes. In \cite{LLM+16}, the signature scheme relies on a commitment $\mathbf{c} = \mathbf{D_0 r} + \mathbf{D_1 m}$. To
@@ -81,17 +88,19 @@ This design choice induces 2 main inefficiencies :
 \end{enumerate}
 
 \subsection{The Solution}
-To mitigate this, we optimize the interactions between the commitment scheme implicitly used by privacy-enhancing protocols and the
+\label{solution}
+To mitigate this, the authors optimize the interactions between the commitment scheme implicitly used by privacy-enhancing protocols and the
 signature scheme itself. Instead of generating the public parameters of these 2 components independently from one another, the authors propose a unified
 generation, using a common matrix $\mathbf{A}$. This indeed reduces the size of the proofs since the size of the
 public key is smaller and it allows the commitment randomness $\mathbf{r}$ to be algebraically absorbed into the signature vector $\mathbf{v}$, eliminating
 the need for a separate proof of opening.
 \section{Signature Scheme}
-The signature scheme proposed by the paper is based on the one studied in \cite{LLM+16}, along with the improvements discussed in the previous section.
+The signature scheme from \cite{LLM+16} on which the paper bases itself is a lattice-based signature with efficient protocols for multi-block messages. 
+The paper studied (\cite{mainPaper}) starts from this scheme and enhances it with the improvements discussed in the previous section.
 
 The proposed construction is a lattice-based signature scheme with efficient protocols, designed to minimize the witness size required for subsequent
 zero-knowledge proofs. While it inherits the high-level goal of \cite{LLM+16} (signing committed messages), its internal mechanics differ fundamentally
-to achieve the efficiency gains outlined in Section~3.2. The scheme relies on the hardness of the Short Integer Solution (SIS) problem over lattices and
+to achieve the efficiency gains outlined in Section \ref{solution}. The scheme relies on the hardness of the Short Integer Solution (SIS) problem over lattices and
 utilizes the trapdoor sampling framework of Micciancio and Peikert \cite{MP12}.
 
 \subsection{Key Generation and Parameters}
@@ -105,12 +114,13 @@ The scheme operates over a modulus $q$ and dimensions $n, m$. The key generation
           $\mathbf{B}$ is hidden by the shortness of $\mathbf{R}$.
     \item $\mathbf{u} \in \mathbb{Z}_q^n$ is a random syndrome defining the specific lattice coset for signatures.
 \end{itemize}
-The public parameters also include a gadget matrix $\mathbf{G}$ and a commitment key $\mathbf{D}$, which are used during
+The public parameters also include a gadget matrix $\mathbf{G} = \mathbf{I}_n \otimes \mathbf{g}$, where $\mathbf{g} \leftarrow [2^0 \vert \dots \vert 2^{\lceil \log_2 q \rceil - 1}] \in \mathbb{Z}_q^{1\times \lceil \log_2 q \rceil}$ 
+is a gadget vector, and a commitment key $\mathbf{D} \hookleftarrow U(\mathbb{Z}_q^{n\times m_3})$, which are used during
 the signing and verification phases.
 
 \subsection{Signing Committed Messages}
 The core innovation lies in the signing algorithm (Algorithm 3.3). To sign a binary message $\mathbf{m}$ hidden inside a
-commitment $\mathbf{c}$, the protocol proceeds as follows:
+commitment $\mathbf{c}$, the scheme employs a linear Ajtai commitment (\cite{AjtaiM}). the protocol proceeds as follows:
 
 \begin{enumerate}
     \item \textbf{Commitment:} The user computes a commitment to $\mathbf{m}$ using the public matrix $\mathbf{A}$:
@@ -120,11 +130,17 @@ commitment $\mathbf{c}$, the protocol proceeds as follows:
           where $\mathbf{r}$ is a Gaussian randomness vector. Note that $\mathbf{A}$ is shared between the signature key and
           the commitment scheme.
 
-    \item \textbf{Preimage Sampling:} The signer chooses a tag $\tau$ and uses the trapdoor $\mathbf{R}$ to sample a
+    \item \textbf{Preimage Sampling:} The signer chooses a tag $\tau \in \mathcal{T}$ and uses the trapdoor $\mathbf{R}$ to sample a
           short vector $\mathbf{v}'$ satisfying a modified linear equation:
           \begin{equation}
               [\mathbf{A} \mid \tau\mathbf{G} - \mathbf{B}] \mathbf{v}' = \mathbf{u} + \mathbf{c} \pmod q
           \end{equation}
+          \begin{itemize}
+            \item To obtain $\mathbf{v}'$, the scheme calls the $\text{SampleD}$ function, defined in \cite{MP12}, that, on input a trapdoor matrix $\mathbf{R} \in \mathbb{Z}^{m_1 \times n \lceil \log_2 q\rceil}$, 
+                a partial parity-check matrix $\mathbf{A} \in \mathbb{Z}_q^{n \times m_1}$, an invertible tag matrix
+                $\mathbf{H} \in \mathbb{Z}_q^{n \times n}$ (in this case, defined as $\tau \mathbf{I}_n$), a syndrome $\mathbf{u} \in \mathbb{Z}_q^n$ and a standard deviation $\sigma$, outputs $\mathbf{v}$ that is statistically close to $\mathcal{D}_{\mathbb{Z}^{m_1 + n \lceil \log_2 q\rceil}, \sigma}$
+                conditioned on $[\mathbf{A} \mid \mathbf{HG} - \mathbf{AR}]\mathbf{v} = \mathbf{u} \text{ mod }q$, with $\mathbf{G} = \mathbf{I}_n \otimes \mathbf{g}$ and $\mathbf{g} = [1\dots 2^{\lceil \log_2 q\rceil - 1}]$ (cf. Lemma 2.6 in \cite{mainPaper}).
+          \end{itemize}
           Substituting $\mathbf{c} = \mathbf{A}\mathbf{r} + \mathbf{D}\mathbf{m}$ and $\mathbf{B} = \mathbf{A}\mathbf{R}$,
           the equation becomes:
           \begin{equation}
@@ -152,18 +168,29 @@ $\|\mathbf{v}\|$ is sufficiently small to ensure security against lattice reduct
 
 \subsection{Security Considerations}
 The reuse of matrix $\mathbf{A}$ for both the signature trapdoor and the commitment introduces a potential vulnerability:
-if the signer could choose $\mathbf{A}$ maliciously, they might break the hiding property of the commitment. To prevent
+if the signer could choose $\mathbf{A}$ maliciously, they might break the hiding property of the commitment. Indeed, $\mathbf{A}$ must look statistically 
+random such that the term $\mathbf{Ar}$ looks like uniform noise in the commitment scheme. If the signer is allowed to choose $\mathbf{A}$ themselves, making $\mathbf{Ar}$ behave 
+non-uniformly, it would not perfectly mask $\mathbf{Dm}$. It is then possible that $\mathbf{c}$ might leak statistical information about $\mathbf{m}$. To prevent
 this, the scheme requires $\mathbf{A}$ to be generated via a hash function (Random Oracle Model) or a trusted setup,
 ensuring $\mathbf{A}$ is statistically uniform and independent of the trapdoor $\mathbf{R}$. The security of the scheme
-is proven under the SIS assumption, distinguishing between Type I forgeries (new tag) and Type II forgeries (reused tag),
-with the latter requiring the use of Rényi divergence to handle the noise distribution introduced by the randomness merging.
-
+is proven under the SIS assumption, i.e., that given a random matrix $\mathbf{A}$, finding a small vector $\mathbf{x} \in \mathbb{Z}_q^n \backslash \{\mathbf{0}\}$ such that $\mathbf{Ax} = \mathbf{0} \text{ mod }q$ is hard.
+In the security analysis of the signature scheme, the authors distinguish between 2 types of forgeries. 
+\begin{itemize}
+    \item Type I forgery (cf. Lemma 3.2. in \cite{mainPaper}) : An adversary produces a Type I forgery $(\tau^*, \mathbf{v}^*)$ if the tag $\tau^*$ does not collide 
+          with the tags of the signing queries. More informally, if the tag $\tau^*$ is a fresh, never-used tag. 
+    \item Type II forgery (cf. Lemma 3.3. in \cite{mainPaper}) : An adversary produces a Type II forgery $(\tau^*, \mathbf{v}^*)$ if the tag $\tau^*$ is re-used from 
+          from some $i^*$-th signing query $(\tau^{(i^*)}, \mathbf{v}^{(i^*)})$, i.e., $\tau^* = \tau^{(i^*)}$. 
+\end{itemize} 
+With the latter requiring the use of Rényi divergence, a measure of closeness between two probability distributions, to handle the noise distribution introduced by the randomness merging.
+Indeed, in the real signing protocol, the signature vector $\mathbf{v}$ is centered around the origin. However, in the security reduction, the simulator must generate signatures without knowledge
+of the secret randomness $\mathbf{r}$. This introduces a shift in the Gaussian distribution of the simulated signatures. Rényi Divergence allows the proof to tolerate the shift introduced by $\mathbf{r}$
+while still guaranteeing that the adversary's success probability in the simulated game is comparable to that in the real game. 
 
 \subsection{Cyclotomic Ring}
 
 A major step in the paper is the move from standard lattices to module lattices. Instead of working only with integers, the construction is transferred to the ring
 \[R=\mathbb{Z}[X]/\langle X^n+1\rangle,\]
-where \(n\) is a power of \(2\). In the paper, this ring is the 2n-th cyclotomic ring. The authors also do modulo \(q\), using\[R_q=\mathbb{Z}_q[X]/\langle X^n+1\rangle.\]
+where \(n\) is a power of \(2\). In the paper, this ring is the $2n$-th cyclotomic ring. The authors also do modulo \(q\), using\[R_q=\mathbb{Z}_q[X]/\langle X^n+1\rangle.\]
 This setting is attractive in post-quantum lattice cryptography because the additional structure leads to more efficient computations and more compact keys.
 
 The signature equation keeps the same general shape as in the standard lattice setting, but it is now written over the ring:
@@ -180,6 +207,7 @@ The paper explains that these conditions are not treated separately, but are all
 This module version is the most practical one in the paper. It is the combination of the ring structure and the LNP22 proof framework that makes the proof of message-signature possession drop below \(650\) KB. Using this construction as a building block, the authors then build an anonymous credential system.
 
 \section{Comparison With More Recent Constructions}
+\label{recentConst}
 The constructions presented in this paper are now superseded by the constructions in the more recent paper \cite{newPaper}. Indeed, the constructions of \cite{mainPaper} representing a step toward a
 realistically implementable signature scheme with efficient protocols, still remains impractical due to several structural and inefficiencies in the proofs. In particular, achieving adaptive security requires
 the inclusion of a second MP trapdoor in the public key, this significantly grows matrix dimensions, signature sizes, and zero-knowledge witnesses. Moreover, the scheme in \cite{mainPaper} relies mainly on statistical 
