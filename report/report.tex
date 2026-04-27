@@ -43,7 +43,8 @@ A first attempt in this direction was the construction of Libert, Ling, Mouharte
 efficient protocols. Although conceptually appealing, their construction suffers from extremely large proof sizes (several hundreds of megabytes) making it impractical.
 The paper studied in this report (\cite{mainPaper}) revisits this problem and proposes a new lattice-based signature scheme specifically designed to interface smoothly
 with recent zero-knowledge argument systems, while reducing the size of the produced proofs. In the following, we analyse the main ideas behind
-this construction, highlight its improvements over previous work, and examine some of its technical components in more detail.
+this construction, highlight its improvements over previous work, and examine some of its technical components in more detail. We then try to apply 
+this signature scheme to a ``real life'' scenario of e-voting by implementing it in python. 
 
 \section{General Paper Analysis}
 
@@ -167,6 +168,7 @@ needing to verify the commitment opening $\mathbf{r}$ separately. Additionally, 
 $\|\mathbf{v}\|$ is sufficiently small to ensure security against lattice reduction attacks.
 
 \subsection{Security Considerations}
+\label{securityconsiderations}
 The reuse of matrix $\mathbf{A}$ for both the signature trapdoor and the commitment introduces a potential vulnerability:
 if the signer could choose $\mathbf{A}$ maliciously, they might break the hiding property of the commitment. Indeed, $\mathbf{A}$ must look statistically 
 random such that the term $\mathbf{Ar}$ looks like uniform noise in the commitment scheme. If the signer is allowed to choose $\mathbf{A}$ themselves, making $\mathbf{Ar}$ behave 
@@ -181,16 +183,7 @@ In the security analysis of the signature scheme, the authors distinguish betwee
     \item Type II forgery (cf. Lemma 3.3. in \cite{mainPaper}) : An adversary produces a Type II forgery $(\tau^*, \mathbf{v}^*)$ if the tag $\tau^*$ is re-used from 
           from some $i^*$-th signing query $(\tau^{(i^*)}, \mathbf{v}^{(i^*)})$, i.e., $\tau^* = \tau^{(i^*)}$. 
 \end{itemize} 
-With the latter requiring the use of Rényi divergence, a measure of closeness between two probability distributions, to handle the noise distribution introduced by the randomness merging.
-Indeed, in the real signing protocol, the signature vector $\mathbf{v}$ is centered around the origin. However, in the security reduction, the simulator must generate signatures without knowledge
-of the secret randomness $\mathbf{r}$. This introduces a shift in the Gaussian distribution of the simulated signatures. Rényi Divergence allows the proof to tolerate the shift introduced by $\mathbf{r}$
-while still guaranteeing that the adversary's success probability in the simulated game is comparable to that in the real game. 
-
-\subsection{Detailed Security Analysis}
-\label{sec:detailed-security}
-
-We give a more rigorous account of the security proofs sketched in
-Section~4.4. Both reductions (Lemmas~3.2 and~3.3 of~\cite{mainPaper}) build
+Now we give an overview of the security proofs discussed above. Both reductions (Lemmas~3.2 and~3.3 of~\cite{mainPaper}) build
 an adversary $\mathcal{B}$ against $\mathsf{SIS}$ from a forger
 $\mathcal{A}$ against the signature: $\mathcal{B}$ embeds its $\mathsf{SIS}$
 challenge in the public key given to $\mathcal{A}$, simulates the signing
@@ -202,10 +195,10 @@ where R\'enyi divergence enters.
 On input a $\mathsf{SIS}$ challenge $[\mathbf{A}\mid u]$, $\mathcal{B}$
 generates the deterministic tags
 $\tau^{(1)},\dots,\tau^{(Q)}$ in advance, picks a guess
-$\overline{\tau}\xleftarrow{\$}\mathcal{T}\setminus\{\tau^{(i)}\}$ on the
+$\overline{\tau} \hookleftarrow \mathcal{T}\setminus\{\tau^{(i)}\}$ on the
 forgery tag, and samples
-$\mathbf{U}\xleftarrow{\$}\{-1,0,1\}^{m_1\times m_3}$,
-$\mathbf{R}\xleftarrow{\$}\{-1,0,1\}^{m_1\times m_2}$. It sets
+$\mathbf{U} \hookleftarrow \{-1,0,1\}^{m_1\times m_3}$,
+$\mathbf{R} \hookleftarrow \{-1,0,1\}^{m_1\times m_2}$. It sets
 $\mathbf{D}=\mathbf{A}\mathbf{U}$ and
 $\mathbf{B}=\mathbf{A}\mathbf{R}+\overline{\tau}\mathbf{G}$, so that
 \begin{equation}\label{eq:typeI-Atau}
@@ -233,8 +226,8 @@ that avoids the suboptimal $\sqrt{m_3}$ factor of~\cite{LLM+16}.
 When $\tau^* = \tau^{(i^+)}$ for some guessed query index $i^+$, the
 cancellation of $\mathbf{G}$ now happens \emph{at} $i^+$, so $\mathcal{B}$
 cannot use \texttt{SampleD} for that query. It instead samples
-$v\xleftarrow{\$}D_{\mathbb{Z}^m,\sigma}$,
-$r_0\xleftarrow{\$}D_{\mathbb{Z}^{m_1},\sigma_2}$, and programs
+$v \hookleftarrow D_{\mathbb{Z}^m,\sigma}$,
+$r_0 \hookleftarrow D_{\mathbb{Z}^{m_1},\sigma_2}$, and programs
 $u := \mathbf{A}_{\tau^{(i^+)}}(v - [r_0^T \mid 0]^T) \bmod q$. On the $i^+$-th
 query, it returns $v^{(i^+)} = v - [r_0^T - (\mathbf{U}m^{(i^+)})^T \mid 0]^T$.
 
@@ -267,7 +260,7 @@ conditional min-entropy at least
 $m_1\log_2 3 - n\log_2 q \geq \omega(\log_2\lambda)$ by the Leftover Hash
 Lemma, hence negligible.
 
-\subsubsection{Lemma~4.1: fix to the YAZ\textsuperscript{+}19 fast mode.}
+\subsubsection{Lemma~4.1: fix to the \cite{YangAZXYW19-0} fast mode.}
 \cite{YangAZXYW19-0} claims that with binary $\mathbf{H}$, proving
 $\mathbf{H}w\in[0,nB]^k$ implies $w\in[0,nB]^n$ w.h.p. The counter-example
 $w=[-1,1,\dots,1]^T$ defeats this: each binary row satisfies the bound with
@@ -281,12 +274,12 @@ This both fixes the soundness gap (from $nB$ to $2B$) and tightens parameters.
 
 \subsubsection{Module setting (Lemmas~3.5 and~3.6).}
 The module reductions follow the same skeleton, with four ring-specific
-substitutions: (i) tag-difference invertibility via [LS18, Cor.~1.2], which
+substitutions: (i) tag-difference invertibility via [\cite{LS18}, Cor.~1.2], which
 constrains $q\equiv 2k+1\pmod{4k}$ and $\|\tau_1-\tau_2\|_\infty\leq 2$;
 (ii) spectral norm of nega-circulant block matrices, bounded via the $n$
-complex embeddings and a union bound [BJRW23, Lem.~2.3]; (iii) ring Leftover
-Hash Lemma [BJRW23, Lem.~2.8]; (iv) regularity of $\mathbf{A}v\bmod q\mathcal{R}$
-via [LPR13, Thm.~7.4]. The R\'enyi argument is unchanged, since Gaussians
+complex embeddings and a union bound [\cite{BJRW23}, Lem.~2.3]; (iii) ring Leftover
+Hash Lemma [\cite{BJRW23}, Lem.~2.8]; (iv) regularity of $\mathbf{A}v\bmod q\mathcal{R}$
+via [\cite{LPR13}, Thm.~7.4]. The R\'enyi argument is unchanged, since Gaussians
 over $\mathcal{R}$ are defined through the coefficient embedding into
 $\mathbb{Z}^n$.
 
@@ -440,48 +433,16 @@ Our implementation is organized into five Python modules, with a clear separatio
     \end{tabular}
 \end{table}
 
-The \texttt{truncated-sampler} repository by Jeudy and Sanders~\cite{JS25} is included as a Git submodule. It provides (i)~Python scripts for parameter estimation, which we used to validate our reproduction of Table~H.4, and (ii)~a C~implementation of the full signature scheme with FLINT-based polynomial arithmetic, which can be compiled separately for performance benchmarks.
+The \texttt{truncated-sampler} repository by Jeudy and Sanders~\cite{JS25} is included as a Git submodule. It provides python scripts for parameter estimation, which we used to validate our reproduction of Table~H.4.
 
 \subsection{Toy vs.\ Real Parameters}
 
-Our implementation uses toy parameters ($n=64$, $q=3329$, $m_1=128$) for computational feasibility. The real parameters from Table~H.4 of~\cite{mainPaper} are shown in Table~\ref{tab:params}.
+Our implementation uses toy parameters ($n=64$, $q=3329$, $m_1=128$) instead of the real parameters ($n=128$, $q=2^{44}-119$, $m_1=657$) for the sake of computability feasibility. 
 
 
 % ════════════════════════════════════════════════════════════════════
 \section{Parameter Analysis}
 % ════════════════════════════════════════════════════════════════════
-
-\subsection{Reproduction of Table~H.4}
-
-Table~\ref{tab:params} presents our reproduction of the parameter estimates from Appendix~H of~\cite{mainPaper} for the anonymous credentials construction with 10 attributes and 4 disclosed.
-
-\begin{table}[H]
-    \centering
-    \caption{Reproduced parameters from Table~H.4 (128-bit quantum security)}
-    \label{tab:params}
-    \begin{tabular}{llr}
-        \toprule
-        \textbf{Parameter}          & \textbf{Symbol} & \textbf{Value}     \\
-        \midrule
-        Ring degree                 & $n$             & 128                \\
-        Module rank                 & $d$             & 12                 \\
-        Modulus                     & $q$             & $2^{44} - 119$     \\
-        Splitting factors           & $k$             & 4                  \\
-        Tag weight                  & $w$             & 6                  \\
-        Tag space size              & $|T_w|$         & $\approx 2^{32.3}$ \\
-        \midrule
-        Commitment randomness dim.  & $m_1$           & 657                \\
-        Trapdoor rank               & $m_2$           & 528                \\
-        User secret dim.            & $m_s$           & 24                 \\
-        Attribute polynomials       & $m_3$           & 10                 \\
-        \midrule
-        Preimage sampling width     & $\sigma$        & 5\,609             \\
-        Combined width              & $\sigma_1$      & 26\,587            \\
-        Commitment randomness width & $\sigma_2$      & 25\,989            \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
 
 \subsection{Comparison with Prior Work}
 
@@ -535,7 +496,7 @@ The tag space $T_w = \{\tau \in S_{\text{bin}} : \|\tau\|_2 = \sqrt{w}\}$ with $
 \section{Experimental Results}
 % ════════════════════════════════════════════════════════════════════
 
-We ran our simulation with 10~voters and 3~candidates using toy parameters ($n=64$, $q=3329$). The results confirm the correctness and security properties of the implementation.
+We ran our simulation with 10~voters and 3~candidates using toy parameters. The results confirm the correctness and security properties of the implementation.
 
 \begin{table}[H]
     \centering
@@ -562,10 +523,11 @@ All 10~signatures passed the verification equation $\mathbf{A}_\tau \mathbf{v} =
 First, the members of the group studied the paper on their own, in order to have a good understanding of the content.
 A meeting was then held in order to exchange any questions and to give a better comprehension of the article to every member of the group.
 As for the work distribution, 2 groups have been made, one group (3 members) focusing on the theoretical part and one group (2 members) focusing on
-the practical part. Even though the groups are studying different branches of the project, it is still very important to understand
-everything that is being done, therefore, meetings are and will be organized to share what the students did with each other.
+the practical part. Even though the groups were studying different branches of the project, it is still very important to understand
+everything that is being done, therefore, meetings have been organized to share what the students did with each other.
 
-The main difficulty encountered so far was understanding the \texttt{SampleD} algorithm at a level of detail sufficient to implement and debug it. In particular, identifying the gadget decomposition bug (base-2 decomposition vs.\ direct modular reduction) required careful comparison between the paper's description of~$\mathbf{G} = \mathbf{I}_n \otimes \mathbf{g}$ and the actual code behavior. Another challenge was mapping the abstract anonymous credentials framework (Section~5.3 of~\cite{mainPaper}) to a concrete e-voting scenario, which required design decisions not covered by the paper (e.g., how to encode voter attributes, what constitutes a ballot on the bulletin board).
+The main difficulties encountered were the understanding of the \texttt{SampleD} algorithm at a level of detail sufficient to implement and debug it. In particular, identifying the gadget decomposition bug (base-2 decomposition vs.\ direct modular reduction) required careful comparison between the paper's description of~$\mathbf{G} = \mathbf{I}_n \otimes \mathbf{g}$ and the actual code behavior. Another challenge was mapping the abstract anonymous credentials framework (Section~5.3 of~\cite{mainPaper}) to a concrete e-voting scenario, which required design decisions not covered by the paper (e.g., how to encode voter attributes, what constitutes a ballot on the bulletin board).
+Another difficulty was to keep this report under 10 pages, some part have been cut in order to respect this constraint. 
 
 \section{Conclusion}
 
@@ -573,7 +535,7 @@ In conclusion, the paper makes an important contribution to lattice-based crypto
 
 What makes the construction particularly interesting is that these efficiency gains do not come at the cost of security. The scheme still relies on standard lattice assumptions, like SIS, while using trapdoor sampling and careful parameter design. The paper shows that efficiency in modern cryptography depends not only on the security of a primitive itself, but also on how well it interacts with other components such as commitments and zero-knowledge proofs. More generally, it shows that lattice-based constructions can be made much more practical for real-world privacy applications.
 
-On the implementation side, we have reproduced the parameter estimates from Table~H.4, implemented the signature scheme (Algorithms~3.1--3.4) with a corrected \texttt{SampleD}, and built a complete e-voting simulation demonstrating the anonymous credentials construction. In the second half of the project, we plan to dive deeper into the security proofs (particularly the Type~I/Type~II forgery reductions and the role of the Rényi divergence), and to compile and benchmark the C~implementation from the \texttt{truncated-sampler} repository to obtain runtime performance figures complementing our size estimates.
+On the implementation side, we have implemented the signature scheme (Algorithms~3.1--3.4), and built a complete e-voting simulation demonstrating the anonymous credentials construction.
 
 \newpage
 \printbibliography
