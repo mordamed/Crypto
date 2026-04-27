@@ -186,6 +186,111 @@ Indeed, in the real signing protocol, the signature vector $\mathbf{v}$ is cente
 of the secret randomness $\mathbf{r}$. This introduces a shift in the Gaussian distribution of the simulated signatures. Rényi Divergence allows the proof to tolerate the shift introduced by $\mathbf{r}$
 while still guaranteeing that the adversary's success probability in the simulated game is comparable to that in the real game. 
 
+\subsection{Detailed Security Analysis}
+\label{sec:detailed-security}
+
+We give a more rigorous account of the security proofs sketched in
+Section~4.4. Both reductions (Lemmas~3.2 and~3.3 of~\cite{mainPaper}) build
+an adversary $\mathcal{B}$ against $\mathsf{SIS}$ from a forger
+$\mathcal{A}$ against the signature: $\mathcal{B}$ embeds its $\mathsf{SIS}$
+challenge in the public key given to $\mathcal{A}$, simulates the signing
+oracle, and extracts a short non-zero lattice vector from the forgery. The
+two cases differ in how the targeted signing query is simulated, which is
+where R\'enyi divergence enters.
+
+\subsubsection{Type I forgery.}
+On input a $\mathsf{SIS}$ challenge $[\mathbf{A}\mid u]$, $\mathcal{B}$
+generates the deterministic tags
+$\tau^{(1)},\dots,\tau^{(Q)}$ in advance, picks a guess
+$\overline{\tau}\xleftarrow{\$}\mathcal{T}\setminus\{\tau^{(i)}\}$ on the
+forgery tag, and samples
+$\mathbf{U}\xleftarrow{\$}\{-1,0,1\}^{m_1\times m_3}$,
+$\mathbf{R}\xleftarrow{\$}\{-1,0,1\}^{m_1\times m_2}$. It sets
+$\mathbf{D}=\mathbf{A}\mathbf{U}$ and
+$\mathbf{B}=\mathbf{A}\mathbf{R}+\overline{\tau}\mathbf{G}$, so that
+\begin{equation}\label{eq:typeI-Atau}
+\mathbf{A}_\tau = [\mathbf{A}\mid (\tau-\overline{\tau})\mathbf{G}-\mathbf{A}\mathbf{R}].
+\end{equation}
+For $\tau^{(i)}\neq\overline{\tau}$, the difference is invertible in
+$\mathbb{Z}_q$, so $\mathbf{R}$ remains a G-trapdoor and $\mathcal{B}$ answers
+all queries via \texttt{SampleD}. The Leftover Hash Lemma guarantees that the
+simulated view is within negligible statistical distance of the real one.
+
+If $\tau^* = \overline{\tau}$ (probability $1/(|\mathcal{T}|-Q)$), the
+$\tau\mathbf{G}$ term in~\eqref{eq:typeI-Atau} vanishes and the forgery yields
+\[
+w = \begin{bmatrix}[\mathbf{I}_{m_1}\mid -\mathbf{R}]v^* - \mathbf{U}m^*\\ -1\end{bmatrix}
+\in L_q^\perp([\mathbf{A}\mid u]).
+\]
+The trailing $-1$ guarantees $w\neq 0$ deterministically. The norm bounds
+$\beta_\infty,\beta_2$ follow from the verification check on $v^*$,
+$\|\mathbf{R}\|_2 \leq \sqrt{m_1}+\sqrt{m_2}+t$ (Lemma~2.4
+of~\cite{mainPaper}), and the sub-exponential tail bound on $\|\mathbf{U}m^*\|_2$
+(Lemma~2.5 of~\cite{mainPaper}), the latter being the technical improvement
+that avoids the suboptimal $\sqrt{m_3}$ factor of~\cite{LLM+16}.
+
+\subsubsection{Type II forgery and R\'enyi divergence.}
+When $\tau^* = \tau^{(i^+)}$ for some guessed query index $i^+$, the
+cancellation of $\mathbf{G}$ now happens \emph{at} $i^+$, so $\mathcal{B}$
+cannot use \texttt{SampleD} for that query. It instead samples
+$v\xleftarrow{\$}D_{\mathbb{Z}^m,\sigma}$,
+$r_0\xleftarrow{\$}D_{\mathbb{Z}^{m_1},\sigma_2}$, and programs
+$u := \mathbf{A}_{\tau^{(i^+)}}(v - [r_0^T \mid 0]^T) \bmod q$. On the $i^+$-th
+query, it returns $v^{(i^+)} = v - [r_0^T - (\mathbf{U}m^{(i^+)})^T \mid 0]^T$.
+
+\paragraph{The gap.} Whereas the real $v_1^{(i^+)}\sim D_{\mathbb{Z}^{m_1},\sigma_1}$
+is centred at $0$, the simulated one is shifted to
+$D_{\mathbb{Z}^{m_1},\sigma_1,\,z^+}$ with $z^+ = \mathbf{U}m^{(i^+)}$.
+The statistical distance scales as $\Theta(\|z^+\|_2/\sigma_1)$, requiring
+$\sigma_1 \gg 2^\lambda\|z^+\|_2$ for negligibility, which would blow up all
+parameters. R\'enyi divergence (Lemma~B.2 of~\cite{mainPaper}) gives instead
+\[
+\mathrm{RD}_\alpha\bigl(D_{\mathbb{Z}^{m_1},\sigma_1}\,\big\|\,D_{\mathbb{Z}^{m_1},\sigma_1,z^+}\bigr)
+\leq \exp(\alpha\pi\|z^+\|_2^2/\sigma_1^2),
+\]
+which is $e^{\alpha\pi}$ as soon as $\sigma_1\geq\|z^+\|_2$ — exactly the
+condition imposed by Algorithm~3.1.
+
+\paragraph{Probability preservation and optimisation.} For any event $E$,
+Lemma~B.1 of~\cite{mainPaper} gives
+$P(E)^{\alpha/(\alpha-1)} \leq \mathrm{RD}_\alpha(P\|Q)\cdot Q(E)$, so an
+adversary with real advantage $\delta$ has simulated advantage at least
+$e^{-\alpha\pi}\delta^{\alpha/(\alpha-1)}$. The optimal order
+$\alpha^* = 1+\sqrt{\log_2(1/\delta)/(\pi\log_2 e)}$ depends on $\delta$, but
+neither $\mathcal{B}$ nor the scheme parameters do — $\alpha$ is purely an
+analytical knob. The final advantage is
+$\mathrm{Adv}[\mathcal{B}]\gtrsim \delta^{\alpha^*/(\alpha^*-1)}e^{-\alpha^*\pi}/Q$.
+
+Non-triviality of $w$ is not automatic here: $w=0$ would force $\mathcal{A}$ to
+predict a column of $\mathbf{U}$ from $(\mathbf{A},\mathbf{A}u')$, which has
+conditional min-entropy at least
+$m_1\log_2 3 - n\log_2 q \geq \omega(\log_2\lambda)$ by the Leftover Hash
+Lemma, hence negligible.
+
+\subsubsection{Lemma~4.1: fix to the YAZ\textsuperscript{+}19 fast mode.}
+\cite{YangAZXYW19-0} claims that with binary $\mathbf{H}$, proving
+$\mathbf{H}w\in[0,nB]^k$ implies $w\in[0,nB]^n$ w.h.p. The counter-example
+$w=[-1,1,\dots,1]^T$ defeats this: each binary row satisfies the bound with
+probability $1-2^{-n}$, so the implication fails. The fix
+in~\cite{mainPaper} switches to ternary $\mathbf{H}\sim U(\{-1,0,1\}^{k\times n})$
+with $k=\lambda/\log_2(9/5)$, for which Lemma~4.1 of~\cite{mainPaper}
+establishes that $\|w\bmod q\|_\infty>2B$ implies
+$\Pr[\|\mathbf{H}w\bmod q\|_\infty\leq B]\leq (5/9)^k$, via a combinatorial
+argument on equivalence classes in $\mathbb{Z}_3^{n-1}/\langle\mathbf{1}\rangle$.
+This both fixes the soundness gap (from $nB$ to $2B$) and tightens parameters.
+
+\subsubsection{Module setting (Lemmas~3.5 and~3.6).}
+The module reductions follow the same skeleton, with four ring-specific
+substitutions: (i) tag-difference invertibility via [LS18, Cor.~1.2], which
+constrains $q\equiv 2k+1\pmod{4k}$ and $\|\tau_1-\tau_2\|_\infty\leq 2$;
+(ii) spectral norm of nega-circulant block matrices, bounded via the $n$
+complex embeddings and a union bound [BJRW23, Lem.~2.3]; (iii) ring Leftover
+Hash Lemma [BJRW23, Lem.~2.8]; (iv) regularity of $\mathbf{A}v\bmod q\mathcal{R}$
+via [LPR13, Thm.~7.4]. The R\'enyi argument is unchanged, since Gaussians
+over $\mathcal{R}$ are defined through the coefficient embedding into
+$\mathbb{Z}^n$.
+
+
 \subsection{Cyclotomic Ring}
 
 A major step in the paper is the move from standard lattices to module lattices. Instead of working only with integers, the construction is transferred to the ring
