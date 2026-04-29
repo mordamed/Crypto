@@ -10,11 +10,11 @@ from .signature import LatticeSignatureScheme
 
 """
 Maps Section 5.3 of the paper to an electronic voting scenario:
-    Organization  →  ElectionAuthority
-    OKeyGen       →  Election setup
-    UKeyGen       →  Voter registration (voter generates secret key)
-    Issue         →  Credential issuance (oblivious signing, Algorithm 5.5)
-    Show          →  Vote casting (ZK proof of credential, Algorithm 5.6)
+    Organization  ->  ElectionAuthority
+    OKeyGen       ->  Election setup
+    UKeyGen       ->  Voter registration (voter generates secret key)
+    Issue         ->  Credential issuance (oblivious signing, Algorithm 5.5)
+    Show          ->  Vote casting (ZK proof of credential, Algorithm 5.6)
 """
 
 @dataclass
@@ -49,7 +49,7 @@ class ElectionResult:
 
 class ElectionAuthority:
     """
-    Election Authority — the Organization in Section 5.3.
+    Election Authority - the Organization in Section 5.3.
 
     Generates election keys (OKeyGen = Algorithm 5.3) and issues
     voter credentials (Issue = Algorithm 5.5). Cannot link
@@ -59,9 +59,9 @@ class ElectionAuthority:
     def __init__(self, candidates: List[str], n_voters: int):
         self.candidates = candidates
         self.n_voters = n_voters
-        self.ms = 8
-        self.m_attr = 8
-        m3 = self.ms + self.m_attr
+        self.ms = 8  # secret key dimension
+        self.m_attr = 8  # attribute dimension
+        m3 = self.ms + self.m_attr # total message dimension for signing
 
         self.scheme = LatticeSignatureScheme(n=64, q=3329, m1=128, m3=m3)
         self.pk, self.sk = self.scheme.keygen()
@@ -72,7 +72,7 @@ class ElectionAuthority:
 
     def issue_credential(self, voter_id: int, attributes: np.ndarray) -> Optional[VoterCredential]:
         """
-        Algorithm 5.5: Issue — Credential Issuance Protocol
+        Algorithm 5.5: Issue - Credential Issuance Protocol
 
         In the full protocol (Algorithm 5.1: OblSign):
         1. User commits to (s || m) with randomness r'
@@ -80,7 +80,7 @@ class ElectionAuthority:
         3. Authority adds randomness r'' and signs
         4. User absorbs r' to get final signature
 
-        The tag tau is unique per voter — prevents double-voting
+        The tag tau is unique per voter - prevents double-voting
         while preserving anonymity.
         """
         if voter_id in self.registration_table:
@@ -88,7 +88,7 @@ class ElectionAuthority:
 
         # Algorithm 5.4: UKeyGen
         s = np.random.randint(0, 2, size=(self.ms, 1), dtype=np.int64)
-        m_e = np.vstack([s, attributes])
+        m_e = np.vstack([s, attributes]) # message = secret key || attributes (extended message)
 
         tag = self.state
         self.state += 1
@@ -160,7 +160,7 @@ class Voter:
 
     def cast_vote(self, vote: int, pk: dict) -> Optional[CastBallot]:
         """
-        Algorithm 5.6: Show — Credential Showing Protocol
+        Algorithm 5.6: Show - Credential Showing Protocol
 
         The real protocol proves in ZK that:
             Verify(pk, m_e, (tau, v), pp) = 1

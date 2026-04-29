@@ -47,20 +47,20 @@ class ParameterAnalyzer:
     def print_table_1_1():
         """Print Table 1.1 comparison with [LLM+16]."""
         print("\n" + "=" * 78)
-        print("  TABLE 1.1 — Comparison with [LLM+16]")
+        print("  TABLE 1.1 - Comparison with [LLM+16]")
         print("=" * 78)
 
         rows = [
-            ("|pk|",         "707·10⁴ MB", "296·10 MB",  "7.8 MB"),
-            ("|sk|",         "372·10² MB", "229·10 MB",  "8.9 MB"),
-            ("|sig|",        "2139·10² KB",   "418 KB",   "273 KB"),
-            ("|π| (ZK proof)", "2671·10³ KB", "177·10² KB", "639 KB"),
+            ("|pk|",            "707*10^4 MB",  "296*10 MB",    "7.8 MB"),
+            ("|sk|",            "372*10^2 MB",  "229*10 MB",    "8.9 MB"),
+            ("|sig|",           "2139*10^2 KB", "418 KB",       "273 KB"),
+            ("|pi| (ZK proof)", "2671*10^3 KB", "177*10^2 KB",  "639 KB"),
         ]
 
-        print(f"\n  {'Metric':<20} {'LLM+16 (fast)':>18} {'Paper (standard)':>18} {'Paper (module)':>18}")
+        print(f"\n  {'Metric':<22} {'LLM+16 (fast)':>16} {'Paper (standard)':>18} {'Paper (module)':>14}")
         print("  " + "-" * 74)
         for row in rows:
-            print(f"  {row[0]:<20} {row[1]:>18} {row[2]:>18} {row[3]:>18}")
+            print(f"  {row[0]:<22} {row[1]:>16} {row[2]:>18} {row[3]:>14}")
 
         print("\n  Improvement factors (module vs LLM+16):")
         print(f"    Public key:  ~900x   |  Secret key: ~4000x")
@@ -76,21 +76,21 @@ class ParameterAnalyzer:
         print("=" * 78)
 
         print(f"\n  Lattice: n={params['n']}, d={params['d']}, "
-              f"q≈2^{log2(params['q']):.0f}, k={params['k']}, w={params['w']}")
+              f"q~2^{log2(params['q']):.0f}, k={params['k']}, w={params['w']}")
         print(f"  Dims:    m1={params['m1']}, m2={params['m2']}, "
               f"ms={params['ms']}, m3={params['m3']}")
-        print(f"  Widths:  σ={params['sigma']}, σ1={params['sigma1']}, σ2={params['sigma2']}")
+        print(f"  Widths:  sigma={params['sigma']}, sigma1={params['sigma1']}, sigma2={params['sigma2']}")
         print(f"\n  |pk|={params['pk_MB']:.2f} MB, |sk|={params['sk_MB']:.2f} MB, "
-              f"|sig|≈{params['sig_KB']:.0f} KB, |π|={params['proof_KB']} KB")
+              f"|sig|~{params['sig_KB']:.0f} KB, |pi|={params['proof_KB']} KB")
 
         print(f"\n  E-Voting Scalability (proof size per voter = {params['proof_KB']} KB):")
         for nv in [1_000, 10_000, 100_000, 1_000_000]:
             total = nv * params['proof_KB'] / 1024
-            print(f"    {nv:>10,} voters → {total:,.0f} MB ({total/1024:.1f} GB)")
+            print(f"    {nv:>10,} voters -> {total:,.0f} MB ({total/1024:.1f} GB)")
 
         print(f"\n  vs Helios (pairing-based): ~{params['proof_KB'] // 3}x overhead, "
               f"BUT Helios is not post-quantum")
-        print(f"  Tag space C(128,6) ≈ 2^{params['log2_tag_space']:.1f} "
-              f"→ {params['tag_space']:,} voters max (any national election)")
+        print(f"  Tag space C(128,6) ~ 2^{params['log2_tag_space']:.1f} "
+              f"-> {params['tag_space']:,} voters max (any national election)")
 
         return params
