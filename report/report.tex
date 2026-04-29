@@ -58,10 +58,9 @@ The methodology builds on well-established tools — Micciancio-Peikert trapdoor
 
 The results are amazing. The proof sizes go down from around 670 MB to below 650 KB in the module instantiation, a reduction of over three orders of magnitude.
 
-The weaknesses are not fundamental in the sense that they arise from the methodology rather than from insurmountable barriers. The main practical weakness is the remaining proof size overhead relative to classical constructions, but it simply reflects the general current state of lattice-based zero-knowledge proofs. It is plausible that further advances in proof systems will reduce these sizes further, and the paper's modular design allows to directly benefit from such future improvements.
+The weaknesses are not fundamental in the sense that they arise from the methodology rather than from insurmountable barriers. The main practical weakness is the remaining proof size overhead relative to classical constructions, \cite{mainPaper} is now superseded by \cite{newPaper} which we detail further in \ref{recentConst}.  
 
 The paper has attracted follow-up citations in the lattice cryptography literature, with works using SEP framework from this paper as a part of their considerations, consistent with the authors' stated goal of providing a versatile building block. These works generally affirm the paper's contributions and have not identified fundamental flaws.
-We can, however, note that some further efficiency improvements are highlighted and lead to more recent constructions (cf. \ref{recentConst}).
 
 This paper, presented at Crypto 2023, was the first one to provide a practical way to create anonymous credentials that can withstand quantum computers. It is likely to remain influential as long as lattice-based cryptography remains the dominant post-quantum paradigm.
 
@@ -213,7 +212,7 @@ If $\tau^* = \overline{\tau}$ (probability $1/(|\mathcal{T}|-Q)$), the
 $\tau\mathbf{G}$ term in~\eqref{eq:typeI-Atau} vanishes and the forgery yields
 \[
 w = \begin{bmatrix}[\mathbf{I}_{m_1}\mid -\mathbf{R}]v^* - \mathbf{U}m^*\\ -1\end{bmatrix}
-\in L_q^\perp([\mathbf{A}\mid u]).
+\in \mathcal{L}_q^\perp([\mathbf{A}\mid u]).
 \]
 The trailing $-1$ guarantees $w\neq 0$ deterministically. The norm bounds
 $\beta_\infty,\beta_2$ follow from the verification check on $v^*$,
@@ -262,7 +261,7 @@ Lemma, hence negligible.
 
 \subsubsection{Lemma~4.1: fix to the \cite{YangAZXYW19-0} fast mode.}
 \cite{YangAZXYW19-0} claims that with binary $\mathbf{H}$, proving
-$\mathbf{H}w\in[0,nB]^k$ implies $w\in[0,nB]^n$ w.h.p. The counter-example
+$\mathbf{H}w\in[0,nB]^k$ implies $w\in[0,nB]^n$ with high probability. The counter-example
 $w=[-1,1,\dots,1]^T$ defeats this: each binary row satisfies the bound with
 probability $1-2^{-n}$, so the implication fails. The fix
 in~\cite{mainPaper} switches to ternary $\mathbf{H}\sim U(\{-1,0,1\}^{k\times n})$
@@ -271,18 +270,6 @@ establishes that $\|w\bmod q\|_\infty>2B$ implies
 $\Pr[\|\mathbf{H}w\bmod q\|_\infty\leq B]\leq (5/9)^k$, via a combinatorial
 argument on equivalence classes in $\mathbb{Z}_3^{n-1}/\langle\mathbf{1}\rangle$.
 This both fixes the soundness gap (from $nB$ to $2B$) and tightens parameters.
-
-\subsubsection{Module setting (Lemmas~3.5 and~3.6).}
-The module reductions follow the same skeleton, with four ring-specific
-substitutions: (i) tag-difference invertibility via [\cite{LS18}, Cor.~1.2], which
-constrains $q\equiv 2k+1\pmod{4k}$ and $\|\tau_1-\tau_2\|_\infty\leq 2$;
-(ii) spectral norm of nega-circulant block matrices, bounded via the $n$
-complex embeddings and a union bound [\cite{BJRW23}, Lem.~2.3]; (iii) ring Leftover
-Hash Lemma [\cite{BJRW23}, Lem.~2.8]; (iv) regularity of $\mathbf{A}v\bmod q\mathcal{R}$
-via [\cite{LPR13}, Thm.~7.4]. The R\'enyi argument is unchanged, since Gaussians
-over $\mathcal{R}$ are defined through the coefficient embedding into
-$\mathbb{Z}^n$.
-
 
 \subsection{Cyclotomic Ring}
 
@@ -298,7 +285,8 @@ Here, the objects are no longer ordinary integer vectors but vectors of polynomi
 
 Proving knowledge of a valid signature requires proving four things at the same time: that the tag \(\tau\) belongs to the chosen tag space; that \(\mathbf{v}\) is short; that \(\mathbf{m}\) is a vector of binary polynomials; and that the verification equation is satisfied.
 The paper explains that these conditions are not treated separately, but are all handled inside the LNP22 framework~\cite{LNP22}. This is important because the efficiency of the scheme depends not only on the signature, but also on how well it fits the proof system used.
-This module version is the most practical one in the paper. It is the combination of the ring structure and the LNP22 proof framework that makes the proof of message-signature possession drop below \(650\) KB. Using this construction as a building block, the authors then build an anonymous credential system.
+This module version is the most practical one in the paper. It is the combination of the ring structure and the LNP22 proof framework that makes the proof of message-signature possession drop below \(650\) KB. Using this construction as a building block, the authors then build an anonymous credential system
+(Anonymous credentials is a type of certification that allows users to prove given properties without revealing all their private attributes). 
 
 \section{Comparison With More Recent Constructions}
 \label{recentConst}
@@ -411,7 +399,7 @@ $\mathbf{A} \hookleftarrow U(\mathbb{Z}_q^{n\times m})$ such that $\lVert \mathb
 
 \subsection{Code Structure}
 
-\href{https://github.com/mordamed/Crypto}{Our implementation} is organized into five Python modules, with a clear separation between the lattice primitives and the e-voting application layer:
+\href{https://github.com/mordamed/Crypto}{Our implementation}\footnote[1]{https://github.com/mordamed/Crypto} is organized into five Python modules, with a clear separation between the lattice primitives and the e-voting application layer:
 
 \begin{table}[H]
     \centering
