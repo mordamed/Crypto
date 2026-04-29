@@ -43,8 +43,8 @@ A first attempt in this direction was the construction of Libert, Ling, Mouharte
 efficient protocols. Although conceptually appealing, their construction suffers from extremely large proof sizes (several hundreds of megabytes) making it impractical.
 The paper studied in this report (\cite{mainPaper}) revisits this problem and proposes a new lattice-based signature scheme specifically designed to interface smoothly
 with recent zero-knowledge argument systems, while reducing the size of the produced proofs. In the following, we analyse the main ideas behind
-this construction, highlight its improvements over previous work, and examine some of its technical components in more detail. We then try to apply 
-this signature scheme to a ``real life'' scenario of e-voting by implementing it in python. 
+this construction, highlight its improvements over previous work, and examine some of its technical components in more detail. We then apply 
+this signature scheme to a ``real life'' scenario of e-voting by implementing it in python, where results follows the theoretical the findings exposed in this report.  
 
 \section{General Paper Analysis}
 
@@ -58,7 +58,7 @@ The methodology builds on well-established tools — Micciancio-Peikert trapdoor
 
 The results are amazing. The proof sizes go down from around 670 MB to below 650 KB in the module instantiation, a reduction of over three orders of magnitude.
 
-The weaknesses are not fundamental in the sense that they arise from the methodology rather than from insurmountable barriers. The main practical weakness is the remaining proof size overhead relative to classical constructions, \cite{mainPaper} is now superseded by \cite{newPaper} which we detail further in \ref{recentConst}.  
+The weaknesses are not fundamental in the sense that they arise from the methodology rather than from insurmountable barriers. The main practical weakness is the remaining proof size overhead relative to classical constructions, \cite{mainPaper} is now superseded by \cite{newPaper} which we detail further in chapter \ref{recentConst}.  
 
 The paper has attracted follow-up citations in the lattice cryptography literature, with works using SEP framework from this paper as a part of their considerations, consistent with the authors' stated goal of providing a versatile building block. These works generally affirm the paper's contributions and have not identified fundamental flaws.
 
@@ -179,7 +179,7 @@ In the security analysis of the signature scheme, the authors distinguish betwee
 \begin{itemize}
     \item Type I forgery (cf. Lemma 3.2. in \cite{mainPaper}) : An adversary produces a Type I forgery $(\tau^*, \mathbf{v}^*)$ if the tag $\tau^*$ does not collide 
           with the tags of the signing queries. More informally, if the tag $\tau^*$ is a fresh, never-used tag. 
-    \item Type II forgery (cf. Lemma 3.3. in \cite{mainPaper}) : An adversary produces a Type II forgery $(\tau^*, \mathbf{v}^*)$ if the tag $\tau^*$ is re-used from 
+    \item Type II forgery (cf. Lemma 3.3. in \cite{mainPaper}) : An adversary produces a Type II forgery $(\tau^*, \mathbf{v}^*)$ if the tag $\tau^*$ is re-used 
           from some $i^*$-th signing query $(\tau^{(i^*)}, \mathbf{v}^{(i^*)})$, i.e., $\tau^* = \tau^{(i^*)}$. 
 \end{itemize} 
 Now we give an overview of the security proofs discussed above. Both reductions (Lemmas~3.2 and~3.3 of~\cite{mainPaper}) build
